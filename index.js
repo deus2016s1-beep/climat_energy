@@ -247,44 +247,92 @@ function buildPdfBytes(jpegBytes, imgWidth, imgHeight){
   const pageWidth = 595.28;
   const pageHeight = 841.89;
   const scale = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-  const drawW = (imgWidth * scale).toFixed(2);
-  const drawH = (imgHeight * scale).toFixed(2);
-  const offsetX = ((pageWidth - imgWidth * scale) / 2).toFixed(2);
-  const offsetY = ((pageHeight - imgHeight * scale) / 2).toFixed(2);
+  const drawW = imgWidth * scale;
+  const drawH = imgHeight * scale;
+  const offsetX = (pageWidth - drawW) / 2;
+  const offsetY = (pageHeight - drawH) / 2;
 
-  const objects = [];
-  const enc = new TextEncoder();
-  const pushText = (t) => objects.push(enc.encode(t));
+  const textEncoder = new TextEncoder();
+  const chunks = [];
+  const objectOffsets = [0];
 
-  pushText('1 0 obj\\n<< /Type /Catalog /Pages 2 0 R >>\\nendobj\\n');
-  pushText('2 0 obj\\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\\nendobj\\n');
-  pushText(`3 0 obj\\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth.toFixed(2)} ${pageHeight.toFixed(2)}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\\nendobj\\n`);
-  pushText(`4 0 obj\\n<< /Type /XObject /Subtype /Image /Width ${imgWidth} /Height ${imgHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\\nstream\\n`);
-  objects.push(jpegBytes);
-  pushText('\\nendstream\\nendobj\\n');
+  const pushAscii = (text) => chunks.push(textEncoder.encode(text));
+  const totalLength = () => chunks.reduce((sum, part) => sum + part.length, 0);
 
-  const content = `q\\n${drawW} 0 0 ${drawH} ${offsetX} ${offsetY} cm\\n/Im0 Do\\nQ\\n`;
-  const contentBytes = enc.encode(content);
-  pushText(`5 0 obj\\n<< /Length ${contentBytes.length} >>\\nstream\\n`);
-  objects.push(contentBytes);
-  pushText('\\nendstream\\nendobj\\n');
+  pushAscii(`%PDF-1.4
+%âãÏÓ
+`);
 
-  const header = enc.encode('%PDF-1.4\\n%ÿÿÿÿ\\n');
-  let size = header.length;
-  const offsets = [0];
-  for(const obj of objects){ offsets.push(size); size += obj.length; }
+  objectOffsets.push(totalLength());
+  pushAscii(`1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+`);
 
-  const xrefStart = size;
-  let xref = 'xref\\n0 6\\n0000000000 65535 f \\n';
-  for(let i=1;i<=5;i++) xref += `${String(offsets[i]).padStart(10,'0')} 00000 n \\n`;
-  const trailer = `trailer\\n<< /Size 6 /Root 1 0 R >>\\nstartxref\\n${xrefStart}\\n%%EOF`;
+  objectOffsets.push(totalLength());
+  pushAscii(`2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+`);
 
-  const parts = [header, ...objects, enc.encode(xref + trailer)];
-  const total = parts.reduce((a,b)=>a+b.length,0);
-  const out = new Uint8Array(total);
-  let pos = 0;
-  for(const part of parts){ out.set(part,pos); pos += part.length; }
-  return out;
+  objectOffsets.push(totalLength());
+  pushAscii(`3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth.toFixed(2)} ${pageHeight.toFixed(2)}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>
+endobj
+`);
+
+  objectOffsets.push(totalLength());
+  pushAscii(`4 0 obj
+<< /Type /XObject /Subtype /Image /Width ${imgWidth} /Height ${imgHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>
+stream
+`);
+  chunks.push(jpegBytes);
+  pushAscii(`
+endstream
+endobj
+`);
+
+  const content = `q
+${drawW.toFixed(2)} 0 0 ${drawH.toFixed(2)} ${offsetX.toFixed(2)} ${offsetY.toFixed(2)} cm
+/Im0 Do
+Q
+`;
+  const contentBytes = textEncoder.encode(content);
+
+  objectOffsets.push(totalLength());
+  pushAscii(`5 0 obj
+<< /Length ${contentBytes.length} >>
+stream
+`);
+  chunks.push(contentBytes);
+  pushAscii(`
+endstream
+endobj
+`);
+
+  const xrefOffset = totalLength();
+  pushAscii(`xref
+0 6
+0000000000 65535 f 
+`);
+  for(let i = 1; i <= 5; i++){
+    pushAscii(`${String(objectOffsets[i]).padStart(10, '0')} 00000 n 
+`);
+  }
+  pushAscii(`trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+${xrefOffset}
+%%EOF`);
+
+  const fullLength = totalLength();
+  const output = new Uint8Array(fullLength);
+  let cursor = 0;
+  for(const part of chunks){
+    output.set(part, cursor);
+    cursor += part.length;
+  }
+  return output;
 }
 
 async function exportPdf(){
