@@ -243,205 +243,53 @@ function importJson(event){
   reader.readAsText(file, 'utf-8');
 }
 
-function dataUrlToBytes(dataUrl){
-  const raw = atob(String(dataUrl).split(',')[1] || '');
-  const bytes = new Uint8Array(raw.length);
-  for(let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
-  return bytes;
-}
-
-function splitCanvasToPageImages(sourceCanvas, jpegQuality = 0.98){
-  const pageWidth = 595.28;
-  const pageHeight = 841.89;
-  const scalePtPerPx = pageWidth / sourceCanvas.width;
-  const sliceHeightPx = Math.floor(pageHeight / scalePtPerPx);
-
-  const pageImages = [];
-  let yOffset = 0;
-
-  while(yOffset < sourceCanvas.height){
-    const currentHeightPx = Math.min(sliceHeightPx, sourceCanvas.height - yOffset);
-    const pageCanvas = document.createElement('canvas');
-    pageCanvas.width = sourceCanvas.width;
-    pageCanvas.height = currentHeightPx;
-
-    const pageCtx = pageCanvas.getContext('2d');
-    pageCtx.fillStyle = '#ffffff';
-    pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-    pageCtx.drawImage(
-      sourceCanvas,
-      0,
-      yOffset,
-      sourceCanvas.width,
-      currentHeightPx,
-      0,
-      0,
-      pageCanvas.width,
-      currentHeightPx,
-    );
-
-    pageImages.push({
-      widthPx: pageCanvas.width,
-      heightPx: pageCanvas.height,
-      bytes: dataUrlToBytes(pageCanvas.toDataURL('image/jpeg', jpegQuality)),
-      pageWidth,
-      pageHeight,
-      drawWidth: pageWidth,
-      drawHeight: currentHeightPx * scalePtPerPx,
-      drawX: 0,
-      drawY: pageHeight - (currentHeightPx * scalePtPerPx),
-    });
-
-    yOffset += currentHeightPx;
-  }
-
-  return pageImages;
-}
-
-function buildPdfBytes(pageImages){
-  const textEncoder = new TextEncoder();
-  const chunks = [];
-  const offsets = [0];
-  const push = (txt) => chunks.push(textEncoder.encode(txt));
-  const totalLength = () => chunks.reduce((sum, part) => sum + part.length, 0);
-
-  const pagesCount = pageImages.length;
-  const firstPageObjId = 3;
-  const objectsPerPage = 3; // Page, Image, Content
-  const totalObjects = 2 + pagesCount * objectsPerPage;
-
-  push(`%PDF-1.4
-%âãÏÓ
-`);
-
-  offsets.push(totalLength());
-  push(`1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-`);
-
-  const kids = [];
-  for(let i = 0; i < pagesCount; i++) kids.push(`${firstPageObjId + (i * objectsPerPage)} 0 R`);
-
-  offsets.push(totalLength());
-  push(`2 0 obj
-<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${pagesCount} >>
-endobj
-`);
-
-  for(let i = 0; i < pagesCount; i++){
-    const img = pageImages[i];
-    const pageObjId = firstPageObjId + (i * objectsPerPage);
-    const imageObjId = pageObjId + 1;
-    const contentObjId = pageObjId + 2;
-
-    offsets[pageObjId] = totalLength();
-    push(`${pageObjId} 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${img.pageWidth.toFixed(2)} ${img.pageHeight.toFixed(2)}] /Resources << /XObject << /Im${i} ${imageObjId} 0 R >> >> /Contents ${contentObjId} 0 R >>
-endobj
-`);
-
-    offsets[imageObjId] = totalLength();
-    push(`${imageObjId} 0 obj
-<< /Type /XObject /Subtype /Image /Width ${img.widthPx} /Height ${img.heightPx} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>
-stream
-`);
-    chunks.push(img.bytes);
-    push(`
-endstream
-endobj
-`);
-
-    const content = `q
-${img.drawWidth.toFixed(2)} 0 0 ${img.drawHeight.toFixed(2)} ${img.drawX.toFixed(2)} ${img.drawY.toFixed(2)} cm
-/Im${i} Do
-Q
-`;
-    const contentBytes = textEncoder.encode(content);
-
-    offsets[contentObjId] = totalLength();
-    push(`${contentObjId} 0 obj
-<< /Length ${contentBytes.length} >>
-stream
-`);
-    chunks.push(contentBytes);
-    push(`
-endstream
-endobj
-`);
-  }
-
-  const xrefOffset = totalLength();
-  push(`xref
-0 ${totalObjects + 1}
-0000000000 65535 f 
-`);
-  for(let i = 1; i <= totalObjects; i++){
-    push(`${String(offsets[i] || 0).padStart(10, '0')} 00000 n 
-`);
-  }
-  push(`trailer
-<< /Size ${totalObjects + 1} /Root 1 0 R >>
-startxref
-${xrefOffset}
-%%EOF`);
-
-  const out = new Uint8Array(totalLength());
-  let cursor = 0;
-  for(const part of chunks){
-    out.set(part, cursor);
-    cursor += part.length;
-  }
-  return out;
-}
-
-async function exportPdf(){
-  const target = document.getElementById('kpPreview');
-  if(!target){
+function exportPdf(){
+  const preview = document.getElementById('kpPreview');
+  if(!preview){
     setSaveStatus('Не найден блок предпросмотра');
     return;
   }
 
-  try{
-    setSaveStatus('Готовим PDF...');
+  const styleText = Array.from(document.querySelectorAll('style')).map(x => x.textContent || '').join("\n");
+  const docNumber = (document.getElementById('kpNum')?.value || 'kp').trim();
 
-    const styleText = Array.from(document.querySelectorAll('style')).map(x => x.textContent || '').join("\\n");
-    const clone = target.cloneNode(true);
-    clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-
-    const widthPx = Math.max(target.scrollWidth, 860);
-    const heightPx = Math.max(target.scrollHeight, 1123);
-    const exportScale = Math.max(2, Math.min(3, window.devicePixelRatio || 1));
-    const renderWidthPx = Math.round(widthPx * exportScale);
-    const renderHeightPx = Math.round(heightPx * exportScale);
-    const serialized = new XMLSerializer().serializeToString(clone);
-
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${renderWidthPx}" height="${renderHeightPx}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${widthPx}px;height:${heightPx}px;transform:scale(${exportScale});transform-origin:top left;"><style>${styleText}</style>${serialized}</div></foreignObject></svg>`;
-    const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-
-    const image = await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = svgUrl;
+  const printHtml = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${escHtml(docNumber)}</title>
+  <style>${styleText}</style>
+  <style>
+    html,body{margin:0!important;padding:0!important;background:#fff!important}
+    .print-wrap{margin:0!important;padding:0!important}
+    .kp-paper{width:210mm!important;max-width:210mm!important;margin:0 auto!important;border:none!important;border-radius:0!important;box-shadow:none!important}
+  </style>
+</head>
+<body>
+  <div class="print-wrap">
+    <div class="kp-paper">${preview.innerHTML}</div>
+  </div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        window.print();
+      }, 120);
     });
+  <\/script>
+</body>
+</html>`;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = renderWidthPx;
-    canvas.height = renderHeightPx;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, renderWidthPx, renderHeightPx);
-    ctx.drawImage(image, 0, 0);
-
-    const pageImages = splitCanvasToPageImages(canvas, 0.985);
-    const pdfBytes = buildPdfBytes(pageImages);
-
-    downloadFile(`kp_${fileSafeName(document.getElementById('kpNum')?.value)}.pdf`, pdfBytes, 'application/pdf');
-    setSaveStatus(`PDF экспортирован: ${pageImages.length} стр. (HD)`);
-  }catch(_e){
-    setSaveStatus('Ошибка экспорта PDF. Попробуйте снова.');
+  const w = window.open('', '_blank');
+  if(!w){
+    setSaveStatus('Браузер заблокировал окно печати. Разрешите pop-up.');
+    return;
   }
+
+  w.document.open();
+  w.document.write(printHtml);
+  w.document.close();
+  setSaveStatus('Открыто окно векторной печати. Сохраните как PDF.');
 }
 
 function render(){
@@ -450,7 +298,7 @@ function render(){
   const includeVat = document.getElementById('includeVat')?.checked ?? true;
   const vatRate = 0.22;
 
-  let tableRows = '';
+  let tableSections = '';
   let grandTotal = 0;
   const secTotals = {};
 
@@ -460,7 +308,7 @@ function render(){
     const secItems = items[sec];
     if(!secItems || secItems.length===0) return;
 
-    tableRows += `<tr class="row-sec row-sec-${sec}">
+    let secRows = `<tr class="row-sec row-sec-${sec}">
       <td colspan="6">
         <div><span class="section-dot">${meta.icon}</span><span>${meta.title}</span></div>
       </td>
@@ -474,7 +322,7 @@ function render(){
       secTotal += sum;
       const altClass = i % 2 ? 'is-alt' : '';
 
-      tableRows += `<tr class="kp-line kp-line-${sec} ${altClass}">
+      secRows += `<tr class="kp-line kp-line-${sec} ${altClass}">
         <td>${i+1}</td>
         <td>${escHtml(row[0]) || '—'}</td>
         <td>${escHtml(row[1]) || '1'}</td>
@@ -487,10 +335,12 @@ function render(){
     secTotals[sec] = secTotal;
     grandTotal += secTotal;
 
-    tableRows += `<tr class="row-tot row-tot-${sec}">
+    secRows += `<tr class="row-tot row-tot-${sec}">
       <td colspan="5" style="text-align:right">Итого по разделу «${meta.title}»:</td>
       <td>${fmt(secTotal)}</td>
     </tr>`;
+
+    tableSections += `<tbody class="section-group">${secRows}</tbody>`;
   });
 
   const nds = includeVat ? grandTotal * vatRate : 0;
@@ -589,8 +439,8 @@ function render(){
             <th style="width:130px">Цена, руб.</th>
             <th style="width:136px">Сумма, руб.</th>
           </tr></thead>
-          <tbody>
-            ${tableRows}
+          ${tableSections}
+          <tbody class="totals-group">
             <tr class="row-gap"><td colspan="6"></td></tr>
             ${totalRows}
           </tbody>

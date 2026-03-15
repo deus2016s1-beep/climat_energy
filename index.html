@@ -266,6 +266,10 @@
   .row-tot-video td{background:#f1e9fd;color:#7436b8}
   .row-tot-fire td{background:#fdeeee;color:#bb3e3e}
 
+.section-group{break-inside:avoid;page-break-inside:avoid}
+.section-group .row-sec,.section-group .row-tot{break-inside:avoid;page-break-inside:avoid}
+.section-group .row-sec + .kp-line{break-inside:avoid;page-break-inside:avoid}
+
   .row-gap td{background:#f7faff!important;height:10px;border-bottom:none}
   .row-grand td{background:#173763!important;color:#fff!important;font-weight:800;font-size:13px;border-bottom:1px solid rgba(255,255,255,.08)}
   .row-nds td{background:#eef5ff!important;color:#173763!important;font-weight:800}
@@ -382,11 +386,12 @@
       page-break-inside:auto!important;
       break-inside:auto!important;
     }
-    .kp-table thead{display:table-row-group!important}
+    .kp-table thead{display:table-header-group!important}
     .kp-table tfoot{display:table-footer-group!important}
     .kp-table tbody{display:table-row-group!important}
     .kp-table tr,.kp-table td,.kp-table th{page-break-inside:avoid!important;break-inside:avoid!important}
-    .row-sec,.row-total{page-break-inside:avoid!important;break-inside:avoid!important}
+    .row-sec,.row-total,.section-group,.totals-group{page-break-inside:avoid!important;break-inside:avoid!important}
+    .section-group .row-sec,.section-group .row-tot,.section-group .row-sec + .kp-line{page-break-inside:avoid!important;break-inside:avoid!important}
   }
 
   ::-webkit-scrollbar{width:7px}
@@ -484,7 +489,7 @@
     <button class="add-item-btn" onclick="addItem('fire')">+ добавить позицию</button>
   </div>
 
-  <button class="btn-print" onclick="exportPdf()">📄 Экспорт PDF</button>
+  <button class="btn-print" onclick="exportPdf()">📄 Экспорт PDF (вектор)</button>
   <div class="action-row">
     <button class="btn-secondary" onclick="saveState(true)">💾 Сохранить</button>
     <button class="btn-secondary" onclick="resetState()">♻️ Сбросить</button>
