@@ -103,6 +103,13 @@
     cursor:pointer;font-size:14px;font-weight:700;width:100%;margin-top:8px;letter-spacing:.3px;
     box-shadow:0 12px 28px rgba(22,84,157,.28)
   }
+  .action-row{display:flex;gap:8px;margin-top:8px}
+  .btn-secondary{
+    flex:1;background:#10203d;border:1px solid #34527f;color:#d9e7ff;
+    border-radius:10px;padding:9px 10px;cursor:pointer;font-size:12px;font-weight:600
+  }
+  .btn-secondary:hover{filter:brightness(1.08)}
+  .save-status{font-size:11px;color:#9eb3da;margin-top:8px;text-align:center;min-height:16px}
 
   .kp-paper{
     background:var(--paper);width:860px;max-width:100%;margin:0 auto;
@@ -478,6 +485,11 @@
   </div>
 
   <button class="btn-print" onclick="window.print()">🖨️ Печать / PDF</button>
+  <div class="action-row">
+    <button class="btn-secondary" onclick="saveState(true)">💾 Сохранить</button>
+    <button class="btn-secondary" onclick="resetState()">♻️ Сбросить</button>
+  </div>
+  <div id="saveStatus" class="save-status"></div>
 </div>
 
 <!-- ═══════════════ PREVIEW ═══════════════ -->
@@ -543,7 +555,9 @@ const defaultItems = {
 
 let items = {};
 Object.keys(defaultItems).forEach(k => { items[k] = defaultItems[k].map(r=>[...r]) });
-let idcnt = 1000;
+const STORAGE_KEY = 'climat-kp-v2-state';
+const FORM_FIELDS = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote'];
+let saveTimer = null;
 
 // ─── BUILD SIDEBAR ITEM ROWS ───────────────────────────────────────────────
 function buildSidebarItems(){
@@ -577,6 +591,104 @@ function delItem(sec, idx){
   render();
 }
 function esc(s){ return String(s||'').replace(/"/g,'&quot;') }
+function escHtml(s){
+  return String(s || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+function parseNum(raw){
+  const normalized = String(raw ?? '').replace(/\s+/g,'').replace(',','.');
+  const value = Number(normalized);
+  return Number.isFinite(value) ? value : 0;
+}
+function setSaveStatus(text){
+  const node = document.getElementById('saveStatus');
+  if(node) node.textContent = text;
+}
+function cloneDefaultItems(){
+  const copy = {};
+  Object.keys(defaultItems).forEach(k => { copy[k] = defaultItems[k].map(r => [...r]); });
+  return copy;
+}
+function collectState(){
+  const fields = {};
+  FORM_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    fields[id] = el ? el.value : '';
+  });
+
+  const toggles = {};
+  Object.keys(SECTIONS).forEach(sec => {
+    toggles[sec] = Boolean(document.getElementById('chk_'+sec)?.checked);
+  });
+
+  return {
+    fields,
+    toggles,
+    includeVat: Boolean(document.getElementById('includeVat')?.checked),
+    items,
+  };
+}
+function applyState(state){
+  if(!state || typeof state !== 'object') return;
+  FORM_FIELDS.forEach(id => {
+    if(typeof state.fields?.[id] === 'string'){
+      const el = document.getElementById(id);
+      if(el) el.value = state.fields[id];
+    }
+  });
+
+  if(typeof state.includeVat === 'boolean'){
+    const vat = document.getElementById('includeVat');
+    if(vat) vat.checked = state.includeVat;
+  }
+
+  Object.keys(SECTIONS).forEach(sec => {
+    const toggle = document.getElementById('chk_'+sec);
+    if(toggle && typeof state.toggles?.[sec] === 'boolean'){
+      toggle.checked = state.toggles[sec];
+    }
+  });
+
+  if(state.items && typeof state.items === 'object'){
+    const nextItems = cloneDefaultItems();
+    Object.keys(SECTIONS).forEach(sec => {
+      if(Array.isArray(state.items[sec])){
+        nextItems[sec] = state.items[sec]
+          .filter(row => Array.isArray(row))
+          .map(row => [String(row[0] || ''), String(row[1] || ''), String(row[2] || ''), String(row[3] || '')]);
+      }
+    });
+    items = nextItems;
+  }
+}
+function saveState(manual = false){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+  setSaveStatus(manual ? 'Сохранено вручную' : `Автосохранение: ${new Date().toLocaleTimeString('ru-RU')}`);
+}
+function schedulePersist(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveState(false), 300);
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    applyState(JSON.parse(raw));
+    setSaveStatus('Черновик восстановлен из браузера');
+  }catch(_e){
+    setSaveStatus('Не удалось загрузить сохранённый черновик');
+  }
+}
+function resetState(){
+  items = cloneDefaultItems();
+  localStorage.removeItem(STORAGE_KEY);
+  setSaveStatus('Данные сброшены к значениям по умолчанию');
+  location.reload();
+}
 
 // ─── FORMAT NUMBER ─────────────────────────────────────────────────────────
 function fmt(n){ return isNaN(n)||n===''?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}) }
@@ -606,17 +718,17 @@ function render(){
 
     let secTotal = 0;
     secItems.forEach((row, i) => {
-      const qty = parseFloat(row[1]) || 0;
-      const price = parseFloat(row[3]) || 0;
+      const qty = parseNum(row[1]);
+      const price = parseNum(row[3]);
       const sum = qty * price;
       secTotal += sum;
       const altClass = i % 2 ? 'is-alt' : '';
 
       tableRows += `<tr class="kp-line kp-line-${sec} ${altClass}">
         <td>${i+1}</td>
-        <td>${row[0]||'—'}</td>
-        <td>${row[1]||'1'}</td>
-        <td>${row[2]||'шт'}</td>
+        <td>${escHtml(row[0]) || '—'}</td>
+        <td>${escHtml(row[1]) || '1'}</td>
+        <td>${escHtml(row[2]) || 'шт'}</td>
         <td>${price ? fmt(price) : '—'}</td>
         <td>${sum ? fmt(sum) : '—'}</td>
       </tr>`;
@@ -677,14 +789,14 @@ function render(){
         <img src="${IMG_LOGO}" alt="Логотип">
       </div>
       <div class="kp-requisites">
-        <b>${g('compName')}</b>
-        📍 ${g('compAddr')}<br>
-        📞 ${g('compPhone')}<br>
-        ✉ ${g('compEmail')}<br>
-        ИНН: ${g('compINN')}<br>
-        Р/сч: ${g('compRs')}<br>
-        Банк: ${g('compBank')}<br>
-        БИК: ${g('compBIK')}
+        <b>${escHtml(g('compName'))}</b>
+        📍 ${escHtml(g('compAddr'))}<br>
+        📞 ${escHtml(g('compPhone'))}<br>
+        ✉ ${escHtml(g('compEmail'))}<br>
+        ИНН: ${escHtml(g('compINN'))}<br>
+        Р/сч: ${escHtml(g('compRs'))}<br>
+        Банк: ${escHtml(g('compBank'))}<br>
+        БИК: ${escHtml(g('compBIK'))}
       </div>
       <div class="kp-bg-box">
         <img src="${IMG_BG}" alt="Фон проекта">
@@ -706,9 +818,9 @@ function render(){
           </div>
           <div class="kp-meta-card">
             <div class="kp-meta-label">Номер документа</div>
-            <div class="kp-meta-value">${g('kpNum') || '—'}</div>
+            <div class="kp-meta-value">${escHtml(g('kpNum')) || '—'}</div>
             <div class="kp-meta-label">Получатель</div>
-            <div class="kp-meta-value">${g('kpClient') || '—'}</div>
+            <div class="kp-meta-value">${escHtml(g('kpClient')) || '—'}</div>
             <div class="kp-meta-label">Дата</div>
             <div class="kp-meta-value">${today}</div>
           </div>
@@ -748,8 +860,8 @@ function render(){
       </div>
 
       <div class="kp-footer">
-        ${g('kpNote')}
-        <div class="kp-sign">Директор: ${g('compDir')} &nbsp;&nbsp; ______________________ &nbsp;/&nbsp; подпись</div>
+        ${escHtml(g('kpNote'))}
+        <div class="kp-sign">Директор: ${escHtml(g('compDir'))} &nbsp;&nbsp; ______________________ &nbsp;/&nbsp; подпись</div>
       </div>
 
       <div class="kp-bottom-space"></div>
@@ -759,9 +871,11 @@ function render(){
   `;
 
   document.getElementById('kpPreview').innerHTML = html;
+  schedulePersist();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
+loadState();
 buildSidebarItems();
 render();
 </script>
