@@ -250,7 +250,7 @@ function dataUrlToBytes(dataUrl){
   return bytes;
 }
 
-function splitCanvasToPageImages(sourceCanvas){
+function splitCanvasToPageImages(sourceCanvas, jpegQuality = 0.98){
   const pageWidth = 595.28;
   const pageHeight = 841.89;
   const scalePtPerPx = pageWidth / sourceCanvas.width;
@@ -283,7 +283,7 @@ function splitCanvasToPageImages(sourceCanvas){
     pageImages.push({
       widthPx: pageCanvas.width,
       heightPx: pageCanvas.height,
-      bytes: dataUrlToBytes(pageCanvas.toDataURL('image/jpeg', 0.95)),
+      bytes: dataUrlToBytes(pageCanvas.toDataURL('image/jpeg', jpegQuality)),
       pageWidth,
       pageHeight,
       drawWidth: pageWidth,
@@ -411,9 +411,12 @@ async function exportPdf(){
 
     const widthPx = Math.max(target.scrollWidth, 860);
     const heightPx = Math.max(target.scrollHeight, 1123);
+    const exportScale = Math.max(2, Math.min(3, window.devicePixelRatio || 1));
+    const renderWidthPx = Math.round(widthPx * exportScale);
+    const renderHeightPx = Math.round(heightPx * exportScale);
     const serialized = new XMLSerializer().serializeToString(clone);
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${widthPx}" height="${heightPx}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>${styleText}</style>${serialized}</div></foreignObject></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${renderWidthPx}" height="${renderHeightPx}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${widthPx}px;height:${heightPx}px;transform:scale(${exportScale});transform-origin:top left;"><style>${styleText}</style>${serialized}</div></foreignObject></svg>`;
     const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 
     const image = await new Promise((resolve, reject) => {
@@ -424,18 +427,18 @@ async function exportPdf(){
     });
 
     const canvas = document.createElement('canvas');
-    canvas.width = widthPx;
-    canvas.height = heightPx;
+    canvas.width = renderWidthPx;
+    canvas.height = renderHeightPx;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, widthPx, heightPx);
+    ctx.fillRect(0, 0, renderWidthPx, renderHeightPx);
     ctx.drawImage(image, 0, 0);
 
-    const pageImages = splitCanvasToPageImages(canvas);
+    const pageImages = splitCanvasToPageImages(canvas, 0.985);
     const pdfBytes = buildPdfBytes(pageImages);
 
     downloadFile(`kp_${fileSafeName(document.getElementById('kpNum')?.value)}.pdf`, pdfBytes, 'application/pdf');
-    setSaveStatus(`PDF экспортирован: ${pageImages.length} стр.`);
+    setSaveStatus(`PDF экспортирован: ${pageImages.length} стр. (HD)`);
   }catch(_e){
     setSaveStatus('Ошибка экспорта PDF. Попробуйте снова.');
   }
