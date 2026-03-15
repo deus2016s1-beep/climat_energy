@@ -1,8 +1,15 @@
 @echo off
 setlocal
 set "APP_DIR=%~dp0"
-set "APP_URL=file:///%APP_DIR%index.html"
-set "APP_URL=%APP_URL:\=/%"
+set "APP_FILE=%APP_DIR%index.html"
+set "APP_URL="
+
+for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "$u = [System.Uri](Resolve-Path '%APP_FILE%'); $u.AbsoluteUri"`) do set "APP_URL=%%I"
+if not defined APP_URL (
+  echo Не удалось сформировать путь к index.html
+  start "KP Generator" "%APP_FILE%"
+  exit /b
+)
 
 REM Запуск в режиме "приложения" (без адресной строки/вкладок)
 if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" (
@@ -23,4 +30,4 @@ if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" (
 )
 
 REM Фолбэк — обычное открытие файла
-start "KP Generator" "%APP_DIR%index.html"
+start "KP Generator" "%APP_FILE%"

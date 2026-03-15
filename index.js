@@ -243,96 +243,156 @@ function importJson(event){
   reader.readAsText(file, 'utf-8');
 }
 
-function buildPdfBytes(jpegBytes, imgWidth, imgHeight){
+function dataUrlToBytes(dataUrl){
+  const raw = atob(String(dataUrl).split(',')[1] || '');
+  const bytes = new Uint8Array(raw.length);
+  for(let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+  return bytes;
+}
+
+function splitCanvasToPageImages(sourceCanvas){
   const pageWidth = 595.28;
   const pageHeight = 841.89;
-  const scale = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-  const drawW = imgWidth * scale;
-  const drawH = imgHeight * scale;
-  const offsetX = (pageWidth - drawW) / 2;
-  const offsetY = (pageHeight - drawH) / 2;
+  const scalePtPerPx = pageWidth / sourceCanvas.width;
+  const sliceHeightPx = Math.floor(pageHeight / scalePtPerPx);
 
+  const pageImages = [];
+  let yOffset = 0;
+
+  while(yOffset < sourceCanvas.height){
+    const currentHeightPx = Math.min(sliceHeightPx, sourceCanvas.height - yOffset);
+    const pageCanvas = document.createElement('canvas');
+    pageCanvas.width = sourceCanvas.width;
+    pageCanvas.height = currentHeightPx;
+
+    const pageCtx = pageCanvas.getContext('2d');
+    pageCtx.fillStyle = '#ffffff';
+    pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+    pageCtx.drawImage(
+      sourceCanvas,
+      0,
+      yOffset,
+      sourceCanvas.width,
+      currentHeightPx,
+      0,
+      0,
+      pageCanvas.width,
+      currentHeightPx,
+    );
+
+    pageImages.push({
+      widthPx: pageCanvas.width,
+      heightPx: pageCanvas.height,
+      bytes: dataUrlToBytes(pageCanvas.toDataURL('image/jpeg', 0.95)),
+      pageWidth,
+      pageHeight,
+      drawWidth: pageWidth,
+      drawHeight: currentHeightPx * scalePtPerPx,
+      drawX: 0,
+      drawY: pageHeight - (currentHeightPx * scalePtPerPx),
+    });
+
+    yOffset += currentHeightPx;
+  }
+
+  return pageImages;
+}
+
+function buildPdfBytes(pageImages){
   const textEncoder = new TextEncoder();
   const chunks = [];
-  const objectOffsets = [0];
-
-  const pushAscii = (text) => chunks.push(textEncoder.encode(text));
+  const offsets = [0];
+  const push = (txt) => chunks.push(textEncoder.encode(txt));
   const totalLength = () => chunks.reduce((sum, part) => sum + part.length, 0);
 
-  pushAscii(`%PDF-1.4
+  const pagesCount = pageImages.length;
+  const firstPageObjId = 3;
+  const objectsPerPage = 3; // Page, Image, Content
+  const totalObjects = 2 + pagesCount * objectsPerPage;
+
+  push(`%PDF-1.4
 %âãÏÓ
 `);
 
-  objectOffsets.push(totalLength());
-  pushAscii(`1 0 obj
+  offsets.push(totalLength());
+  push(`1 0 obj
 << /Type /Catalog /Pages 2 0 R >>
 endobj
 `);
 
-  objectOffsets.push(totalLength());
-  pushAscii(`2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+  const kids = [];
+  for(let i = 0; i < pagesCount; i++) kids.push(`${firstPageObjId + (i * objectsPerPage)} 0 R`);
+
+  offsets.push(totalLength());
+  push(`2 0 obj
+<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${pagesCount} >>
 endobj
 `);
 
-  objectOffsets.push(totalLength());
-  pushAscii(`3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth.toFixed(2)} ${pageHeight.toFixed(2)}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>
+  for(let i = 0; i < pagesCount; i++){
+    const img = pageImages[i];
+    const pageObjId = firstPageObjId + (i * objectsPerPage);
+    const imageObjId = pageObjId + 1;
+    const contentObjId = pageObjId + 2;
+
+    offsets[pageObjId] = totalLength();
+    push(`${pageObjId} 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${img.pageWidth.toFixed(2)} ${img.pageHeight.toFixed(2)}] /Resources << /XObject << /Im${i} ${imageObjId} 0 R >> >> /Contents ${contentObjId} 0 R >>
 endobj
 `);
 
-  objectOffsets.push(totalLength());
-  pushAscii(`4 0 obj
-<< /Type /XObject /Subtype /Image /Width ${imgWidth} /Height ${imgHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>
+    offsets[imageObjId] = totalLength();
+    push(`${imageObjId} 0 obj
+<< /Type /XObject /Subtype /Image /Width ${img.widthPx} /Height ${img.heightPx} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>
 stream
 `);
-  chunks.push(jpegBytes);
-  pushAscii(`
+    chunks.push(img.bytes);
+    push(`
 endstream
 endobj
 `);
 
-  const content = `q
-${drawW.toFixed(2)} 0 0 ${drawH.toFixed(2)} ${offsetX.toFixed(2)} ${offsetY.toFixed(2)} cm
-/Im0 Do
+    const content = `q
+${img.drawWidth.toFixed(2)} 0 0 ${img.drawHeight.toFixed(2)} ${img.drawX.toFixed(2)} ${img.drawY.toFixed(2)} cm
+/Im${i} Do
 Q
 `;
-  const contentBytes = textEncoder.encode(content);
+    const contentBytes = textEncoder.encode(content);
 
-  objectOffsets.push(totalLength());
-  pushAscii(`5 0 obj
+    offsets[contentObjId] = totalLength();
+    push(`${contentObjId} 0 obj
 << /Length ${contentBytes.length} >>
 stream
 `);
-  chunks.push(contentBytes);
-  pushAscii(`
+    chunks.push(contentBytes);
+    push(`
 endstream
 endobj
 `);
+  }
 
   const xrefOffset = totalLength();
-  pushAscii(`xref
-0 6
+  push(`xref
+0 ${totalObjects + 1}
 0000000000 65535 f 
 `);
-  for(let i = 1; i <= 5; i++){
-    pushAscii(`${String(objectOffsets[i]).padStart(10, '0')} 00000 n 
+  for(let i = 1; i <= totalObjects; i++){
+    push(`${String(offsets[i] || 0).padStart(10, '0')} 00000 n 
 `);
   }
-  pushAscii(`trailer
-<< /Size 6 /Root 1 0 R >>
+  push(`trailer
+<< /Size ${totalObjects + 1} /Root 1 0 R >>
 startxref
 ${xrefOffset}
 %%EOF`);
 
-  const fullLength = totalLength();
-  const output = new Uint8Array(fullLength);
+  const out = new Uint8Array(totalLength());
   let cursor = 0;
   for(const part of chunks){
-    output.set(part, cursor);
+    out.set(part, cursor);
     cursor += part.length;
   }
-  return output;
+  return out;
 }
 
 async function exportPdf(){
@@ -341,42 +401,43 @@ async function exportPdf(){
     setSaveStatus('Не найден блок предпросмотра');
     return;
   }
+
   try{
     setSaveStatus('Готовим PDF...');
-    const styleText = Array.from(document.querySelectorAll('style')).map(x => x.textContent || '').join("\n");
+
+    const styleText = Array.from(document.querySelectorAll('style')).map(x => x.textContent || '').join("\\n");
     const clone = target.cloneNode(true);
     clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-    const w = Math.max(target.scrollWidth, 860);
-    const h = Math.max(target.scrollHeight, 1123);
+
+    const widthPx = Math.max(target.scrollWidth, 860);
+    const heightPx = Math.max(target.scrollHeight, 1123);
     const serialized = new XMLSerializer().serializeToString(clone);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>${styleText}</style>${serialized}</div></foreignObject></svg>`;
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${widthPx}" height="${heightPx}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>${styleText}</style>${serialized}</div></foreignObject></svg>`;
     const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 
-    const img = await new Promise((resolve, reject) => {
-      const i = new Image();
-      i.onload = () => resolve(i);
-      i.onerror = reject;
-      i.src = svgUrl;
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = svgUrl;
     });
 
     const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
+    canvas.width = widthPx;
+    canvas.height = heightPx;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, w, h);
-    ctx.drawImage(img, 0, 0);
+    ctx.fillRect(0, 0, widthPx, heightPx);
+    ctx.drawImage(image, 0, 0);
 
-    const jpegUrl = canvas.toDataURL('image/jpeg', 0.95);
-    const raw = atob(jpegUrl.split(',')[1]);
-    const jpegBytes = new Uint8Array(raw.length);
-    for(let i=0;i<raw.length;i++) jpegBytes[i] = raw.charCodeAt(i);
+    const pageImages = splitCanvasToPageImages(canvas);
+    const pdfBytes = buildPdfBytes(pageImages);
 
-    const pdfBytes = buildPdfBytes(jpegBytes, w, h);
     downloadFile(`kp_${fileSafeName(document.getElementById('kpNum')?.value)}.pdf`, pdfBytes, 'application/pdf');
-    setSaveStatus('PDF экспортирован');
+    setSaveStatus(`PDF экспортирован: ${pageImages.length} стр.`);
   }catch(_e){
-    setSaveStatus('Ошибка экспорта PDF. Откройте файл через браузер и попробуйте снова.');
+    setSaveStatus('Ошибка экспорта PDF. Попробуйте снова.');
   }
 }
 
