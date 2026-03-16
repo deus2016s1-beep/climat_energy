@@ -1,0 +1,77 @@
+{
+  "name": "climat-energy-kp",
+  "version": "1.0.0",
+  "description": "Генератор коммерческих предложений — Climat Energy",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "build:portable": "electron-builder --win portable --x64",
+    "build:installer": "electron-builder --win nsis --x64"
+  },
+  "build": {
+    "appId": "com.climatenergy.kp",
+    "productName": "КП — Climat Energy",
+    "copyright": "© 2025 Climat Energy",
+    "icon": "assets/icon.ico",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "assets/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "sign": null,
+      "signingHashAlgorithms": null,
+      "forceCodeSigning": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "КП Climat Energy",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    },
+    "portable": {
+      "artifactName": "КП-Climat-Energy-Portable.exe"
+    }
+  },
+  "keywords": [
+    "commercial-proposal",
+    "hvac",
+    "climate",
+    "energy"
+  ],
+  "author": "Climat Energy",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@electron/packager": "^19.1.0",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  }
+}
