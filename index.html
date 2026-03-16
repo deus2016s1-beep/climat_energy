@@ -185,13 +185,28 @@ body{
 .add-btn:hover{background:rgba(49,160,101,.22)}
 
 /* ══════════════════════════════════════════════
-   PDF BUTTON
+   FOOTER BUTTONS
 ══════════════════════════════════════════════ */
 .sidebar-footer{
-  padding:16px 18px 20px;
+  padding:14px 18px 18px;
   border-top:1px solid var(--panel-border);
   background:linear-gradient(0deg,rgba(8,19,42,.9),transparent);
   flex-shrink:0;
+}
+.btn-kp-row{display:flex;gap:8px;margin-bottom:10px}
+.btn-kp{
+  flex:1;padding:10px 6px;border-radius:11px;cursor:pointer;
+  font-size:12px;font-weight:700;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:filter .15s,transform .15s;border:1px solid;
+}
+.btn-kp:hover{transform:translateY(-1px);filter:brightness(1.12)}
+.btn-kp:active{transform:translateY(0);filter:brightness(.94)}
+.btn-kp-save{
+  background:rgba(47,127,215,.14);border-color:rgba(47,127,215,.28);color:#7ac3ff
+}
+.btn-kp-load{
+  background:rgba(49,160,101,.12);border-color:rgba(49,160,101,.25);color:#6de0a4
 }
 .btn-pdf{
   width:100%;padding:14px 20px;border:none;border-radius:14px;cursor:pointer;
@@ -366,12 +381,12 @@ body{
   vertical-align:middle;background:#fff
 }
 .kp-table tbody tr:last-child td{border-bottom:none}
-.kp-table td:nth-child(1){text-align:center;width:42px;color:#7a8798;font-weight:700}
-.kp-table td:nth-child(2){line-height:1.45}
-.kp-table td:nth-child(3){text-align:center;width:68px;color:#445066;font-weight:600}
-.kp-table td:nth-child(4){text-align:center;width:76px;color:#445066}
-.kp-table td:nth-child(5){text-align:right;width:128px;color:#245c9d;font-weight:700}
-.kp-table td:nth-child(6){text-align:right;width:136px;font-weight:800;color:#1f2937}
+.kp-table td:nth-child(1){text-align:center;width:42px;color:#6a7890;font-weight:700}
+.kp-table td:nth-child(2){line-height:1.5;color:#0e1c2e;font-weight:600;font-size:12px}
+.kp-table td:nth-child(3){text-align:center;width:68px;color:#1a2e46;font-weight:700}
+.kp-table td:nth-child(4){text-align:center;width:76px;color:#1a2e46;font-weight:600}
+.kp-table td:nth-child(5){text-align:right;width:128px;color:#1a5fa8;font-weight:800}
+.kp-table td:nth-child(6){text-align:right;width:136px;font-weight:900;color:#0d1c30;font-size:12.5px}
 
 .kp-line td{transition:background .12s}
 .kp-line-heat.is-alt td{background:#fff8f2}
@@ -455,8 +470,23 @@ body{
 /* ══════════════════════════════════════════════
    PRINT / PDF
 ══════════════════════════════════════════════ */
+/* ── Скрываем print-полоски на экране ── */
+.print-stripe-top,.print-stripe-bottom{display:none}
+
 @media print{
-  @page{size:A4 portrait;margin:0}
+  /* Полоска повторяется на каждой странице через position:fixed */
+  .print-stripe-top{
+    display:block!important;position:fixed;top:0;left:0;right:0;height:7px;z-index:9999;
+    background:linear-gradient(90deg,#163863 0%,#255c9d 45%,#d4890e 100%);
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .print-stripe-bottom{
+    display:block!important;position:fixed;bottom:0;left:0;right:0;height:7px;z-index:9999;
+    background:linear-gradient(90deg,#163863 0%,#255c9d 45%,#d4890e 100%);
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+
+  @page{size:A4 portrait;margin:7px 0}
   html,body{
     width:210mm!important;background:#fff!important;
     margin:0!important;padding:0!important;
@@ -471,22 +501,43 @@ body{
     min-height:auto!important;margin:0!important;padding:0!important;
     border-radius:0!important;border:none!important;
   }
-  .kp-top-stripe{height:2.5mm!important}
-  .kp-main{padding:7mm 9mm 0!important}
+  /* Убираем встроенные полоски — заменены fixed-версиями */
+  .kp-top-stripe,.kp-bottom-stripe{display:none!important}
+  .kp-main{padding:6mm 9mm 0!important}
   .kp-title-wrap{margin-bottom:5mm!important}
   .kp-side-stack{width:62mm!important;min-width:62mm!important}
   .kp-summary{gap:6px!important;margin:4mm 0 5mm!important}
-  .kp-footer{margin:0 9mm 4mm!important;padding:11px 13px!important}
-  .kp-bottom-stripe{height:2.5mm!important}
+  .kp-footer{margin:0 9mm 5mm!important;padding:11px 13px!important;break-inside:avoid!important}
   .kp-summary-card,.kp-table-wrap,.services-box,.kp-footer{box-shadow:none!important}
+
+  /* Таблица: разрешаем разрыв между строками, но не внутри строки */
   .kp-table-wrap{
     break-inside:auto!important;page-break-inside:auto!important;
-    overflow:visible!important;border-radius:0!important;
+    overflow:visible!important;border-radius:0!important;border:none!important;
+    margin-bottom:5mm!important;
   }
   .kp-table{page-break-inside:auto!important}
   .kp-table thead{display:table-row-group!important}
-  .kp-table tr,.kp-table td,.kp-table th{page-break-inside:avoid!important;break-inside:avoid!important}
-  .row-sec{page-break-inside:avoid!important;break-inside:avoid!important}
+  .kp-table tr{page-break-inside:avoid!important;break-inside:avoid!important}
+  .kp-table td,.kp-table th{page-break-inside:avoid!important;break-inside:avoid!important}
+  /* Заголовок раздела держим вместе с первой строкой */
+  .row-sec{page-break-after:avoid!important;break-after:avoid!important;
+           page-break-inside:avoid!important;break-inside:avoid!important}
+  .row-tot{page-break-before:avoid!important;break-before:avoid!important}
+
+  /* Блок направлений работ держим цельным */
+  .services-box{break-inside:avoid!important;page-break-inside:avoid!important;
+    border-radius:0!important;margin-bottom:4mm!important}
+  .services-grid{grid-template-columns:1fr 1fr 1fr!important}
+  .svc-item{border:1px solid #edf2f8!important;break-inside:avoid!important}
+
+  /* Итоговые строки держим вместе */
+  .row-grand,.row-nds,.row-total-nds{
+    page-break-inside:avoid!important;break-inside:avoid!important;
+    page-break-before:avoid!important;break-before:avoid!important
+  }
+  .row-gap{display:none!important}
+
   .kp-logo-box,.kp-requisites,.kp-bg-box{min-height:140px!important}
   .kp-bg-box{height:140px!important;overflow:hidden!important;position:relative!important}
   .kp-bg-box img{
@@ -494,6 +545,9 @@ body{
     inset:5px!important;width:calc(100% - 10px)!important;height:calc(100% - 10px)!important;
     object-fit:contain!important;opacity:.97!important
   }
+  .kp-header{break-inside:avoid!important;page-break-inside:avoid!important}
+  .kp-title-wrap{break-inside:avoid!important;page-break-inside:avoid!important}
+  .kp-summary-card{break-inside:avoid!important;page-break-inside:avoid!important}
 }
 
 /* ══════════════════════════════════════════════
@@ -630,13 +684,23 @@ body{
 
   </div><!-- /.sidebar-body -->
 
-  <!-- Footer with PDF button -->
+  <!-- Footer with action buttons -->
   <div class="sidebar-footer">
+    <!-- Save/Load row -->
+    <div class="btn-kp-row">
+      <button class="btn-kp btn-kp-save" onclick="saveKPFile()" title="Сохранить проект КП (Ctrl+S)">
+        <span>💾</span><span>Сохранить КП</span>
+      </button>
+      <button class="btn-kp btn-kp-load" onclick="loadKPFile()" title="Открыть сохранённый КП (Ctrl+O)">
+        <span>📂</span><span>Открыть КП</span>
+      </button>
+    </div>
+    <!-- PDF button -->
     <button class="btn-pdf" id="btnPDF" onclick="savePDF()">
       <span class="pdf-icon">📄</span>
       <span>Сохранить PDF</span>
     </button>
-    <div class="btn-pdf-hint">Ctrl+S — быстрое сохранение</div>
+    <div class="btn-pdf-hint">Ctrl+Shift+S — экспорт в PDF</div>
   </div>
 </div>
 
@@ -648,6 +712,10 @@ body{
 </div>
 
 </div><!-- /.app -->
+
+<!-- Print stripes (repeat on every page via position:fixed in print mode) -->
+<div class="print-stripe-top"></div>
+<div class="print-stripe-bottom"></div>
 
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
@@ -783,12 +851,71 @@ async function savePDF(){
   }
 }
 
-// Keyboard shortcut Ctrl+S
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault()
-    savePDF()
+// ─── COLLECT / APPLY STATE ─────────────────────────────────────────────────
+function collectState(){
+  const f = id => document.getElementById(id)?.value ?? ''
+  const b = id => document.getElementById(id)?.checked ?? false
+  return {
+    _version: 1,
+    compName: f('compName'), compAddr: f('compAddr'),
+    compPhone: f('compPhone'), compEmail: f('compEmail'),
+    compINN: f('compINN'), compRs: f('compRs'),
+    compBank: f('compBank'), compBIK: f('compBIK'), compDir: f('compDir'),
+    kpNum: f('kpNum'), kpClient: f('kpClient'), kpNote: f('kpNote'),
+    includeVat: b('includeVat'),
+    chk_heat: b('chk_heat'), chk_vent: b('chk_vent'), chk_ac: b('chk_ac'),
+    chk_video: b('chk_video'), chk_fire: b('chk_fire'),
+    items: JSON.parse(JSON.stringify(items)),
   }
+}
+
+function applyState(s){
+  if (!s) return
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? '' }
+  const chk = (id, val) => { const el = document.getElementById(id); if(el) el.checked = !!val }
+  set('compName', s.compName); set('compAddr', s.compAddr)
+  set('compPhone', s.compPhone); set('compEmail', s.compEmail)
+  set('compINN', s.compINN); set('compRs', s.compRs)
+  set('compBank', s.compBank); set('compBIK', s.compBIK); set('compDir', s.compDir)
+  set('kpNum', s.kpNum); set('kpClient', s.kpClient); set('kpNote', s.kpNote)
+  chk('includeVat', s.includeVat)
+  chk('chk_heat', s.chk_heat); chk('chk_vent', s.chk_vent); chk('chk_ac', s.chk_ac)
+  chk('chk_video', s.chk_video); chk('chk_fire', s.chk_fire)
+  if (s.items) {
+    Object.keys(items).forEach(k => {
+      if (s.items[k]) items[k] = s.items[k].map(r => [...r])
+    })
+  }
+  buildSidebarItems()
+  render()
+}
+
+// ─── SAVE / LOAD KP ────────────────────────────────────────────────────────
+async function saveKPFile(){
+  if (!window.electronAPI?.saveKP) return showToast('Функция доступна только в приложении', true)
+  const data = collectState()
+  const result = await window.electronAPI.saveKP(data)
+  if (result?.ok) showToast('КП сохранён: ' + result.path.split(/[\\/]/).pop())
+  else if (!result?.canceled) showToast('Ошибка сохранения: ' + (result?.error || '?'), true)
+}
+
+async function loadKPFile(){
+  if (!window.electronAPI?.loadKP) return showToast('Функция доступна только в приложении', true)
+  const result = await window.electronAPI.loadKP()
+  if (result?.ok && result.data) {
+    applyState(result.data)
+    showToast('КП загружен успешно!')
+  } else if (!result?.canceled) {
+    showToast('Ошибка загрузки: ' + (result?.error || '?'), true)
+  }
+}
+
+// ─── KEYBOARD SHORTCUTS ────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const ctrl = e.ctrlKey || e.metaKey
+  if (ctrl && e.shiftKey && e.key === 'S') { e.preventDefault(); savePDF() }
+  else if (ctrl && e.key === 's') { e.preventDefault(); saveKPFile() }
+  else if (ctrl && e.key === 'o') { e.preventDefault(); loadKPFile() }
 })
 
 // ─── RENDER ────────────────────────────────────────────────────────────────
@@ -881,7 +1008,7 @@ function render(){
     : ''
 
   const html = `
-    <div class="kp-top-stripe"></div>
+    <div class="kp-top-stripe"></div><!-- visible only on screen, hidden in print (replaced by fixed stripes) -->
 
     <div class="kp-header">
       <div class="kp-logo-box">

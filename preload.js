@@ -3,6 +3,9 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
+  // PDF
   savePDF: () => ipcRenderer.invoke('save-pdf'),
-  onPDFSaved: (callback) => ipcRenderer.on('pdf-saved', (_event, result) => callback(result)),
+  // Сохранение / загрузка КП
+  saveKP: (data) => ipcRenderer.invoke('save-kp', data),
+  loadKP: () => ipcRenderer.invoke('load-kp'),
 })
