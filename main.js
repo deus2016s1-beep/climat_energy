@@ -1,15 +1,18 @@
-const { app, BrowserWindow, Menu, shell, dialog } = require('electron')
+const { app, BrowserWindow, Menu, shell, dialog, ipcMain } = require('electron')
 const path = require('path')
+const fs = require('fs')
 
 // Disable hardware acceleration issues on some systems
 app.commandLine.appendSwitch('disable-gpu-sandbox')
 
+let mainWindow = null
+
 function createWindow() {
-  const win = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 900,
-    minHeight: 600,
+  mainWindow = new BrowserWindow({
+    width: 1440,
+    height: 920,
+    minWidth: 960,
+    minHeight: 640,
     title: 'КП — Climat Energy',
     icon: path.join(__dirname, 'assets', 'icon.ico'),
     webPreferences: {
@@ -18,28 +21,25 @@ function createWindow() {
       nodeIntegration: false,
     },
     backgroundColor: '#0d1b34',
-    show: false, // show after ready-to-show
+    show: false,
   })
 
-  win.loadFile('index.html')
+  mainWindow.loadFile('index.html')
 
-  win.once('ready-to-show', () => {
-    win.show()
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show()
   })
 
-  // Меню приложения
+  // ─── Меню приложения ─────────────────────────────────────────────────────
   const menu = Menu.buildFromTemplate([
     {
       label: 'Файл',
       submenu: [
         {
-          label: 'Печать / Сохранить PDF',
-          accelerator: 'CmdOrCtrl+P',
+          label: 'Сохранить PDF',
+          accelerator: 'CmdOrCtrl+S',
           click: () => {
-            const focused = BrowserWindow.getFocusedWindow()
-            if (focused) {
-              focused.webContents.executeJavaScript('window.print()')
-            }
+            if (mainWindow) mainWindow.webContents.executeJavaScript('savePDF()')
           }
         },
         { type: 'separator' },
@@ -68,11 +68,11 @@ function createWindow() {
         {
           label: 'О программе',
           click: () => {
-            dialog.showMessageBox({
+            dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'О программе',
               message: 'КП — Генератор коммерческих предложений',
-              detail: 'Версия 2.0\n© 2025 Climat Energy\n\nПрограмма для создания и печати коммерческих предложений.',
+              detail: 'Версия 2.1\n© 2025 Climat Energy\n\nПрограмма для создания и сохранения коммерческих предложений в PDF.',
               buttons: ['OK']
             })
           }
@@ -82,6 +82,36 @@ function createWindow() {
   ])
   Menu.setApplicationMenu(menu)
 }
+
+// ─── IPC: Сохранение PDF ──────────────────────────────────────────────────
+ipcMain.handle('save-pdf', async () => {
+  const win = mainWindow
+  if (!win) return { ok: false, error: 'Нет активного окна' }
+
+  const { filePath, canceled } = await dialog.showSaveDialog(win, {
+    title: 'Сохранить коммерческое предложение',
+    defaultPath: `КП_Climat_Energy_${new Date().toISOString().slice(0, 10)}.pdf`,
+    filters: [{ name: 'PDF файлы', extensions: ['pdf'] }],
+  })
+
+  if (canceled || !filePath) return { ok: false, canceled: true }
+
+  try {
+    const data = await win.webContents.printToPDF({
+      pageSize: 'A4',
+      printBackground: true,
+      landscape: false,
+      marginsType: 0,
+      margins: { top: 0, bottom: 0, left: 0, right: 0 },
+    })
+
+    fs.writeFileSync(filePath, data)
+    shell.showItemInFolder(filePath)
+    return { ok: true, path: filePath }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+})
 
 app.whenReady().then(() => {
   createWindow()

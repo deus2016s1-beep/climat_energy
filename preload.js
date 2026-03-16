@@ -1,7 +1,8 @@
 // preload.js — безопасный мост между Electron и страницей
-// contextBridge используется для передачи только разрешённых API
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  platform: process.platform
+  platform: process.platform,
+  savePDF: () => ipcRenderer.invoke('save-pdf'),
+  onPDFSaved: (callback) => ipcRenderer.on('pdf-saved', (_event, result) => callback(result)),
 })
