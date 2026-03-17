@@ -397,7 +397,7 @@ body{
 /* ─── Table ─── */
 .kp-table-wrap{
   border:1px solid #dfe8f3;border-radius:20px;overflow:hidden;
-  background:#fff;box-shadow:0 10px 30px rgba(17,39,76,.05);margin-bottom:18px
+  background:linear-gradient(180deg,#1f508e 44px,#fff 44px);box-shadow:0 10px 30px rgba(17,39,76,.05);margin-bottom:18px
 }
 .kp-table{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px}
 .kp-table thead th{
@@ -406,8 +406,11 @@ body{
   font-size:10.5px;font-weight:700;letter-spacing:.4px;
   border-right:1px solid rgba(255,255,255,.08)
 }
-.kp-table thead th:last-child{border-right:none}
-.kp-table thead th:nth-child(2){text-align:left}
+.kp-table thead th:last-child{border-right:none;border-top-right-radius:18px}
+.kp-table thead th:first-child{border-top-left-radius:18px}
+.kp-table thead th:nth-child(3){text-align:left}
+/* Force blue gradient on no-print header cells */
+.kp-table thead th.no-print{background:linear-gradient(180deg,#1f508e,#173763)!important}
 .kp-table td{
   border-bottom:1px solid var(--line-soft);padding:10px 11px;
   vertical-align:middle;background:#fff
