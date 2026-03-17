@@ -582,7 +582,7 @@ body{
     text-align:right;
   }
 
-  @page{size:A4 portrait;margin:7px 0 30px 0}
+  @page{size:A4 portrait;margin:7px 0 38px 0}
   html,body{
     width:210mm!important;background:#fff!important;
     margin:0!important;padding:0!important;
@@ -632,8 +632,9 @@ body{
   .kp-footer{margin:0 9mm 5mm!important;padding:11px 13px!important;break-inside:avoid!important}
   .kp-summary-card,.kp-table-wrap,.services-box,.kp-footer{box-shadow:none!important}
 
-  /* Таблица: разрешаем разрыв между строками, но не внутри строки */
+  /* Таблица: всегда начинается с нового листа */
   .kp-table-wrap{
+    break-before:page!important;page-break-before:always!important;
     break-inside:auto!important;page-break-inside:auto!important;
     overflow:visible!important;border-radius:0!important;border:none!important;
     margin-bottom:5mm!important;
@@ -647,9 +648,9 @@ body{
            page-break-inside:avoid!important;break-inside:avoid!important}
   .row-tot{page-break-before:avoid!important;break-before:avoid!important}
 
-  /* Блок направлений работ держим цельным */
+  /* Блок направлений работ держим цельным, с отступом сверху */
   .services-box{break-inside:avoid!important;page-break-inside:avoid!important;
-    border-radius:0!important;margin-bottom:4mm!important}
+    border-radius:0!important;margin-top:6mm!important;margin-bottom:6mm!important}
   .services-grid{grid-template-columns:1fr 1fr 1fr!important}
   .svc-item{border:1px solid #edf2f8!important;break-inside:avoid!important}
 
