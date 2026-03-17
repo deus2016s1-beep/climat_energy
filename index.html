@@ -491,6 +491,30 @@ body{
 
 .kp-bottom-stripe{background:linear-gradient(90deg,#163863 0%,#255c9d 45%,#d4890e 100%);height:8px}
 
+/* ── Recent files ── */
+.recent-section{margin-bottom:12px}
+.recent-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto}
+.recent-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(100,150,230,.10);
+  border-radius:9px;cursor:pointer;transition:background .15s,border-color .15s;
+  font-size:11.5px;color:#b8d0f0;
+}
+.recent-item:hover{background:rgba(255,255,255,.07);border-color:rgba(100,150,230,.22)}
+.recent-item-icon{font-size:14px;flex-shrink:0;opacity:.7}
+.recent-item-info{flex:1;min-width:0}
+.recent-item-name{font-weight:700;color:#dce9ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent-item-date{font-size:9.5px;color:var(--text-muted);margin-top:1px}
+.recent-empty{font-size:11px;color:var(--text-muted);text-align:center;padding:12px 0;font-style:italic}
+.btn-new-kp{
+  width:100%;padding:9px 12px;border-radius:9px;cursor:pointer;
+  font-size:11.5px;font-weight:700;font-family:inherit;
+  background:rgba(212,137,14,.12);border:1px solid rgba(212,137,14,.25);
+  color:#f0a830;transition:background .15s;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-new-kp:hover{background:rgba(212,137,14,.20)}
+
 /* ══════════════════════════════════════════════
    SCROLLBAR
 ══════════════════════════════════════════════ */
@@ -700,6 +724,15 @@ body{
 
   <!-- Main scrollable body -->
   <div class="sidebar-body">
+
+    <!-- Recent files & New КП -->
+    <div class="sb-section recent-section">
+      <div class="sb-section-title"><span>📁</span> Последние КП</div>
+      <button class="btn-new-kp" onclick="newKP()">✨ Новое КП</button>
+      <div class="recent-list" id="recentList">
+        <div class="recent-empty">Нет недавних файлов</div>
+      </div>
+    </div>
 
     <!-- Company info -->
     <div class="sb-section">
@@ -1015,7 +1048,13 @@ async function saveKPFile(){
   if (!window.electronAPI?.saveKP) return showToast('Функция доступна только в приложении', true)
   const data = collectState()
   const result = await window.electronAPI.saveKP(data)
-  if (result?.ok) showToast('КП сохранён: ' + result.path.split(/[\\/]/).pop())
+  if (result?.ok) {
+    showToast('КП сохранён: ' + result.path.split(/[\\/]/).pop())
+    if (window.electronAPI.addRecentFile) {
+      await window.electronAPI.addRecentFile(result.path)
+      loadRecentFiles()
+    }
+  }
   else if (!result?.canceled) showToast('Ошибка сохранения: ' + (result?.error || '?'), true)
 }
 
@@ -1025,8 +1064,91 @@ async function loadKPFile(){
   if (result?.ok && result.data) {
     applyState(result.data)
     showToast('КП загружен успешно!')
+    if (result.path && window.electronAPI.addRecentFile) {
+      await window.electronAPI.addRecentFile(result.path)
+      loadRecentFiles()
+    }
   } else if (!result?.canceled) {
     showToast('Ошибка загрузки: ' + (result?.error || '?'), true)
+  }
+}
+
+// ─── NEW KP (автонумерация) ─────────────────────────────────────────────────
+async function newKP(){
+  // Reset items to defaults
+  Object.keys(defaultItems).forEach(k => {
+    items[k] = defaultItems[k].map(r => [...r])
+  })
+
+  // Reset form fields
+  document.getElementById('kpClient').value = ''
+  document.getElementById('kpNote').value = 'Коммерческое предложение действительно 14 календарных дней с даты выставления. Цены указаны с учётом стоимости материалов и монтажных работ.'
+  document.getElementById('includeVat').checked = true
+  document.getElementById('chk_heat').checked = true
+  document.getElementById('chk_vent').checked = true
+  document.getElementById('chk_ac').checked = true
+  document.getElementById('chk_video').checked = false
+  document.getElementById('chk_fire').checked = false
+
+  // Get next auto-number
+  if (window.electronAPI?.getNextKpNum) {
+    const num = await window.electronAPI.getNextKpNum()
+    document.getElementById('kpNum').value = num
+  } else {
+    // Browser fallback
+    const stored = parseInt(localStorage.getItem('lastKpNum') || '0', 10) + 1
+    localStorage.setItem('lastKpNum', String(stored))
+    const year = new Date().getFullYear()
+    document.getElementById('kpNum').value = String(stored).padStart(3, '0') + ' / ' + year
+  }
+
+  buildSidebarItems()
+  render()
+  showToast('Новое КП создано')
+}
+
+// ─── RECENT FILES ───────────────────────────────────────────────────────────
+async function loadRecentFiles(){
+  const listEl = document.getElementById('recentList')
+  if (!listEl) return
+
+  let files = []
+  if (window.electronAPI?.getRecentFiles) {
+    files = await window.electronAPI.getRecentFiles()
+  }
+
+  if (!files || files.length === 0) {
+    listEl.innerHTML = '<div class="recent-empty">Нет недавних файлов</div>'
+    return
+  }
+
+  listEl.innerHTML = files.map(f => {
+    const date = new Date(f.date).toLocaleDateString('ru-RU', { day:'2-digit', month:'short', year:'numeric' })
+    const safePath = String(f.path).replace(/'/g, "\\'")
+    return `<div class="recent-item" onclick="openRecentKP('${safePath}')" title="${f.path}">
+      <span class="recent-item-icon">📄</span>
+      <div class="recent-item-info">
+        <div class="recent-item-name">${f.name}</div>
+        <div class="recent-item-date">${date}</div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+async function openRecentKP(filePath){
+  if (!window.electronAPI?.openRecentFile) return
+  const result = await window.electronAPI.openRecentFile(filePath)
+  if (result?.ok && result.data) {
+    applyState(result.data)
+    showToast('КП загружен: ' + result.path.split(/[\\/]/).pop())
+    // Update recent files list (move to top)
+    if (window.electronAPI.addRecentFile) {
+      await window.electronAPI.addRecentFile(result.path)
+      loadRecentFiles()
+    }
+  } else {
+    showToast(result?.error || 'Не удалось открыть файл', true)
+    loadRecentFiles() // Refresh list (removes missing files)
   }
 }
 
@@ -1036,6 +1158,7 @@ document.addEventListener('keydown', e => {
   if (ctrl && e.shiftKey && e.key === 'S') { e.preventDefault(); savePDF() }
   else if (ctrl && e.key === 's') { e.preventDefault(); saveKPFile() }
   else if (ctrl && e.key === 'o') { e.preventDefault(); loadKPFile() }
+  else if (ctrl && e.key === 'n') { e.preventDefault(); newKP() }
 })
 
 // ─── RENDER ────────────────────────────────────────────────────────────────
@@ -1259,6 +1382,19 @@ if (footerLogo) footerLogo.src = IMG_ICON
 
 buildSidebarItems()
 render()
+
+// Загружаем историю и устанавливаем текущий номер КП
+;(async () => {
+  loadRecentFiles()
+  // При первом запуске показываем текущий номер (без инкремента)
+  if (window.electronAPI?.getCurrentKpNum) {
+    const curNum = await window.electronAPI.getCurrentKpNum()
+    // Если номер 000 — значит ещё не создавали, ставим 001
+    if (curNum.startsWith('000')) {
+      document.getElementById('kpNum').value = '001 / ' + new Date().getFullYear()
+    }
+  }
+})()
 </script>
 </body>
 </html>

@@ -2,6 +2,24 @@ const { app, BrowserWindow, Menu, shell, dialog, ipcMain } = require('electron')
 const path = require('path')
 const fs = require('fs')
 
+// ─── App data helpers ────────────────────────────────────────────────────────
+function getConfigPath() {
+  return path.join(app.getPath('userData'), 'climat-config.json')
+}
+
+function readConfig() {
+  try {
+    const raw = fs.readFileSync(getConfigPath(), 'utf8')
+    return JSON.parse(raw)
+  } catch { return {} }
+}
+
+function writeConfig(data) {
+  const dir = path.dirname(getConfigPath())
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  fs.writeFileSync(getConfigPath(), JSON.stringify(data, null, 2), 'utf8')
+}
+
 app.commandLine.appendSwitch('disable-gpu-sandbox')
 
 let mainWindow = null
@@ -31,6 +49,12 @@ function createWindow() {
     {
       label: 'Файл',
       submenu: [
+        {
+          label: 'Новое КП',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => mainWindow?.webContents.executeJavaScript('newKP()')
+        },
+        { type: 'separator' },
         {
           label: 'Сохранить PDF',
           accelerator: 'CmdOrCtrl+Shift+S',
@@ -72,7 +96,7 @@ function createWindow() {
             type: 'info',
             title: 'О программе',
             message: 'КП — Генератор коммерческих предложений',
-            detail: 'Версия 2.2\n© 2025 Climat Energy\n\nПрограмма для создания, сохранения и экспорта КП в PDF.',
+            detail: 'Версия 2.3\n© 2025 Climat Energy\n\nПрограмма для создания, сохранения и экспорта КП в PDF.\nАвтонумерация · История КП · Быстрый доступ',
             buttons: ['OK']
           })
         }
@@ -153,7 +177,80 @@ ipcMain.handle('load-kp', async () => {
   try {
     const raw = fs.readFileSync(filePaths[0], 'utf8')
     const data = JSON.parse(raw)
-    return { ok: true, data }
+    return { ok: true, data, path: filePaths[0] }
+  } catch (err) {
+    return { ok: false, error: 'Не удалось прочитать файл: ' + err.message }
+  }
+})
+
+// ─── IPC: Автонумерация КП ────────────────────────────────────────────────
+ipcMain.handle('get-next-kp-num', () => {
+  const config = readConfig()
+  const year = new Date().getFullYear()
+  let lastNum = config.lastKpNum || 0
+  let lastYear = config.lastKpYear || year
+
+  if (lastYear !== year) {
+    lastNum = 0
+    lastYear = year
+  }
+
+  lastNum++
+  config.lastKpNum = lastNum
+  config.lastKpYear = lastYear
+  writeConfig(config)
+
+  const num = String(lastNum).padStart(3, '0')
+  return `${num} / ${lastYear}`
+})
+
+ipcMain.handle('get-current-kp-num', () => {
+  const config = readConfig()
+  const year = new Date().getFullYear()
+  const num = String(config.lastKpNum || 0).padStart(3, '0')
+  return `${num} / ${config.lastKpYear || year}`
+})
+
+// ─── IPC: История последних КП ───────────────────────────────────────────
+ipcMain.handle('get-recent-files', () => {
+  const config = readConfig()
+  return config.recentFiles || []
+})
+
+ipcMain.handle('add-recent-file', (_event, filePath) => {
+  const config = readConfig()
+  let recent = config.recentFiles || []
+
+  // Remove duplicate if exists
+  recent = recent.filter(f => f.path !== filePath)
+
+  // Add to the beginning
+  recent.unshift({
+    path: filePath,
+    name: path.basename(filePath),
+    date: new Date().toISOString(),
+  })
+
+  // Keep only last 10
+  recent = recent.slice(0, 10)
+
+  config.recentFiles = recent
+  writeConfig(config)
+  return recent
+})
+
+ipcMain.handle('open-recent-file', async (_event, filePath) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      // Remove from recent if file doesn't exist
+      const config = readConfig()
+      config.recentFiles = (config.recentFiles || []).filter(f => f.path !== filePath)
+      writeConfig(config)
+      return { ok: false, error: 'Файл не найден: ' + filePath }
+    }
+    const raw = fs.readFileSync(filePath, 'utf8')
+    const data = JSON.parse(raw)
+    return { ok: true, data, path: filePath }
   } catch (err) {
     return { ok: false, error: 'Не удалось прочитать файл: ' + err.message }
   }
