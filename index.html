@@ -579,8 +579,10 @@ body{
 .ie-cell{cursor:text;padding:5px 8px!important}
 [contenteditable]:not(:focus):hover::after{content:'✏️';font-size:8px;margin-left:3px;opacity:.4;pointer-events:none}
 .row-del-btn{opacity:0;background:none;border:none;color:#f97272;cursor:pointer;font-size:11px;padding:2px 5px;vertical-align:middle;transition:opacity .12s}
-tr:hover .row-del-btn{opacity:.7}
-.row-del-btn:hover{opacity:1!important}
+.row-dup-btn{opacity:0;background:none;border:none;color:#7ac3ff;cursor:pointer;font-size:12px;padding:2px 4px;vertical-align:middle;transition:opacity .12s}
+tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
+.row-del-btn:hover{opacity:1!important;color:#ff5555}
+.row-dup-btn:hover{opacity:1!important}
 .row-add-item td{padding:4px 8px!important}
 .row-add-btn{background:rgba(47,127,215,.07);border:1px dashed rgba(47,127,215,.22);color:#7ac3ff;border-radius:5px;cursor:pointer;font-size:10.5px;padding:3px 14px;font-family:inherit;transition:background .12s}
 .row-add-btn:hover{background:rgba(47,127,215,.16)}
@@ -593,6 +595,8 @@ tr:hover .row-del-btn{opacity:.7}
   .row-add-item{display:none!important}
   .ie-hint{display:none!important}
   .no-print{display:none!important}
+  .row-dup-btn{display:none!important}
+  .row-del-btn{display:none!important}
 }
 
 /* ── Help Modal ── */
@@ -905,6 +909,9 @@ tr:hover .row-del-btn{opacity:.7}
         <button class="logo-btn" onclick="resetLogo()">↩️ Стандартный</button>
       </div>
       <img class="logo-preview" id="logoPreview" src="" alt="" style="display:none">
+      <div style="margin-top:14px;border-top:1px solid rgba(100,150,230,.08);padding-top:12px">
+        <button class="logo-btn" style="color:#f97272;border-color:rgba(249,114,114,.2);width:100%;justify-content:center;display:flex" onclick="clearAllItems()">🗑 Удалить все позиции</button>
+      </div>
     </div>
 
     <!-- Sections -->
@@ -1142,12 +1149,26 @@ const docState = {
   kpNum: '001 / 2025',
   kpClient: '',
   kpNote: 'Коммерческое предложение действительно 14 календарных дней с даты выставления. Цены указаны с учётом стоимости материалов и монтажных работ.',
+  kpTitle: 'Инженерные системы\nи монтажные решения',
+  kpSubtitle: 'Подбор оборудования, материалов и монтажных работ по вашему объекту — с понятной структурой и прозрачной стоимостью.',
+  adv: [
+    { icon: '🏆', num: '15+',    label: 'лет на рынке' },
+    { icon: '🏗️', num: '500+',   label: 'реализованных объектов' },
+    { icon: '✅', num: '3 года',  label: 'гарантия на монтаж' },
+    { icon: '❄️', num: '6',       label: 'направлений инженерии' },
+    { icon: '🚀', num: '24/7',   label: 'техническая поддержка' },
+  ],
 }
 
 function syncInlineEdits(){
   document.querySelectorAll('#kpPreview [data-field]').forEach(el => {
     const field = el.dataset.field
     if (field && docState.hasOwnProperty(field)) docState[field] = el.innerText.trim()
+  })
+  document.querySelectorAll('#kpPreview [data-adv-idx]').forEach(el => {
+    const i = parseInt(el.dataset.advIdx)
+    const key = el.dataset.advKey
+    if (!isNaN(i) && key && docState.adv[i]) docState.adv[i][key] = el.innerText.trim()
   })
 }
 
@@ -1159,8 +1180,27 @@ function addItem(sec){
   render()
 }
 function delItem(sec, idx){
+  syncInlineEdits()
   items[sec].splice(idx, 1)
   render()
+}
+function dupItem(sec, idx){
+  syncInlineEdits()
+  items[sec].splice(idx + 1, 0, [...items[sec][idx]])
+  render()
+}
+function clearSection(sec){
+  if (!confirm('Удалить все позиции раздела «' + (SECTIONS[sec]?.title || sec) + '»?')) return
+  syncInlineEdits()
+  items[sec] = []
+  render()
+}
+function clearAllItems(){
+  if (!confirm('Удалить все позиции во всех разделах?')) return
+  syncInlineEdits()
+  Object.keys(items).forEach(k => { items[k] = [] })
+  render()
+  showToast('Все позиции удалены')
 }
 function esc(s){ return String(s || '').replace(/"/g, '&quot;') }
 function fmt(n){
@@ -1239,8 +1279,9 @@ function collectState(){
   const b = id => document.getElementById(id)?.checked ?? false
   const f = id => document.getElementById(id)?.value ?? ''
   return {
-    _version: 2,
+    _version: 3,
     ...docState,
+    adv: JSON.parse(JSON.stringify(docState.adv)),
     includeVat: b('includeVat'),
     discType: f('discType'), discValue: f('discValue'),
     chk_heat: b('chk_heat'), chk_vent: b('chk_vent'), chk_ac: b('chk_ac'),
@@ -1254,8 +1295,9 @@ function applyState(s){
   const chk = (id, val) => { const el = document.getElementById(id); if(el) el.checked = !!val }
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? '' }
   // Restore docState fields
-  const fields = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote']
+  const fields = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote','kpTitle','kpSubtitle']
   fields.forEach(k => { if (s[k] !== undefined) docState[k] = s[k] })
+  if (s.adv && Array.isArray(s.adv)) docState.adv = s.adv.map(a => ({...a}))
   // Restore controls
   chk('includeVat', s.includeVat)
   if (s.discType) set('discType', s.discType)
@@ -1302,10 +1344,8 @@ async function loadKPFile(){
 
 // ─── NEW KP (автонумерация) ─────────────────────────────────────────────────
 async function newKP(){
-  // Reset items to defaults
-  Object.keys(defaultItems).forEach(k => {
-    items[k] = defaultItems[k].map(r => [...r])
-  })
+  // Новое КП начинается с пустыми позициями
+  Object.keys(items).forEach(k => { items[k] = [] })
 
   // Reset docState
   docState.kpClient = ''
@@ -1663,6 +1703,14 @@ document.addEventListener('blur', function(e) {
     return
   }
 
+  // Adv bar fields
+  const advIdx = parseInt(el.dataset.advIdx)
+  const advKey = el.dataset.advKey
+  if (!isNaN(advIdx) && advKey && docState.adv[advIdx]) {
+    docState.adv[advIdx][advKey] = el.innerText.trim()
+    return
+  }
+
   const sec = el.dataset.sec
   const idx = parseInt(el.dataset.idx)
   const col = parseInt(el.dataset.col)
@@ -1701,7 +1749,12 @@ function render(){
     const secItems = items[sec]
 
     tableRows += `<tr class="row-sec row-sec-${sec}">
-      <td colspan="7"><div><span class="section-dot">${meta.icon}</span><span>${meta.title}</span></div></td>
+      <td colspan="7">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><span class="section-dot">${meta.icon}</span><span>${meta.title}</span></div>
+          <button class="row-del-btn no-print" style="opacity:.55;font-size:10px;padding:2px 8px;border:1px solid rgba(255,255,255,.15);border-radius:5px" onclick="clearSection('${sec}')" title="Очистить раздел">🗑 Очистить</button>
+        </div>
+      </td>
     </tr>`
 
     let secTotal = 0
@@ -1720,7 +1773,10 @@ function render(){
           <td class="ie-cell" contenteditable="true" spellcheck="false" data-sec="${sec}" data-idx="${i}" data-col="2">${row[2] || 'шт'}</td>
           <td class="ie-cell ie-num" contenteditable="true" spellcheck="false" data-sec="${sec}" data-idx="${i}" data-col="3">${rawPrice}</td>
           <td>${sum ? fmt(sum) : '—'}</td>
-          <td style="width:28px"><button class="row-del-btn" onclick="delItem('${sec}',${i})" title="Удалить строку">✕</button></td>
+          <td style="width:52px;text-align:center">
+            <button class="row-dup-btn" onclick="dupItem('${sec}',${i})" title="Дублировать строку">⧉</button>
+            <button class="row-del-btn" onclick="delItem('${sec}',${i})" title="Удалить строку">✕</button>
+          </td>
         </tr>`
       })
     }
@@ -1816,39 +1872,20 @@ function render(){
 
     <!-- Advantages bar -->
     <div class="kp-adv-bar">
+      ${d.adv.map((a, i) => `
       <div class="kp-adv-item">
-        <span class="kp-adv-icon">🏆</span>
-        <div class="kp-adv-num">15+</div>
-        <div class="kp-adv-label">лет на рынке</div>
-      </div>
-      <div class="kp-adv-item">
-        <span class="kp-adv-icon">🏗️</span>
-        <div class="kp-adv-num">500+</div>
-        <div class="kp-adv-label">реализованных<br>объектов</div>
-      </div>
-      <div class="kp-adv-item">
-        <span class="kp-adv-icon">✅</span>
-        <div class="kp-adv-num">3 года</div>
-        <div class="kp-adv-label">гарантия<br>на монтаж</div>
-      </div>
-      <div class="kp-adv-item">
-        <span class="kp-adv-icon">❄️</span>
-        <div class="kp-adv-num">6</div>
-        <div class="kp-adv-label">направлений<br>инженерии</div>
-      </div>
-      <div class="kp-adv-item">
-        <span class="kp-adv-icon">🚀</span>
-        <div class="kp-adv-num">24/7</div>
-        <div class="kp-adv-label">техническая<br>поддержка</div>
-      </div>
+        <span class="kp-adv-icon" contenteditable="true" data-adv-idx="${i}" data-adv-key="icon" spellcheck="false">${a.icon}</span>
+        <div class="kp-adv-num" contenteditable="true" data-adv-idx="${i}" data-adv-key="num" spellcheck="false">${a.num}</div>
+        <div class="kp-adv-label" contenteditable="true" data-adv-idx="${i}" data-adv-key="label" spellcheck="false">${a.label}</div>
+      </div>`).join('')}
     </div>
 
     <div class="kp-main">
       <div class="kp-title-wrap">
         <div class="kp-title-block">
           <div class="kp-kicker">❄️ Коммерческое предложение</div>
-          <div class="kp-title">Инженерные системы<br>и монтажные решения</div>
-          <div class="kp-subtitle">Подбор оборудования, материалов и монтажных работ по вашему объекту — с понятной структурой и прозрачной стоимостью.</div>
+          <div class="kp-title ie-block" contenteditable="true" data-field="kpTitle" spellcheck="false">${d.kpTitle}</div>
+          <div class="kp-subtitle ie-block" contenteditable="true" data-field="kpSubtitle" spellcheck="false">${d.kpSubtitle}</div>
         </div>
         <div class="kp-side-stack">
           <div class="kp-side-note">
@@ -1878,7 +1915,7 @@ function render(){
             <th style="width:72px">Ед.изм.</th>
             <th style="width:120px">Цена, руб.</th>
             <th style="width:128px">Сумма, руб.</th>
-            <th style="width:24px" class="no-print"></th>
+            <th style="width:52px" class="no-print"></th>
           </tr></thead>
           <tbody>
             ${tableRows}
