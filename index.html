@@ -280,19 +280,51 @@ body{
 }
 .kp-requisites b{font-size:14px;display:block;margin-bottom:6px;color:#173763;font-weight:800;letter-spacing:.2px}
 .kp-bg-box{
-  overflow:hidden;background:#eef3fb;position:relative;
-  min-height:166px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  background:linear-gradient(135deg,#dde9f7 0%,#c8daf0 50%,#d5e5f5 100%);
+  position:relative;min-height:166px;
+}
+.kp-bg-box::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 20% 50%,rgba(23,55,99,.12),transparent 55%),
+    radial-gradient(circle at 80% 30%,rgba(212,137,14,.08),transparent 45%);
+  z-index:1;pointer-events:none;
 }
 .kp-bg-box::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(23,55,99,.08),transparent 50%);
-  pointer-events:none;
+  content:'CLIMAT ENERGY';
+  position:absolute;bottom:10px;right:14px;
+  font-size:9px;font-weight:800;letter-spacing:2px;
+  color:rgba(23,55,99,.22);z-index:2;pointer-events:none;
 }
 .kp-bg-box img{
-  position:absolute;inset:6px;
-  width:calc(100% - 12px);height:calc(100% - 12px);
-  object-fit:contain;object-position:center;opacity:.97
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:center;opacity:.88;z-index:0
 }
+
+/* ─── Advantages bar ─── */
+.kp-adv-bar{
+  display:flex;align-items:stretch;
+  background:linear-gradient(90deg,#163863 0%,#1f508e 50%,#173763 100%);
+  border-bottom:3px solid #d4890e;
+}
+.kp-adv-item{
+  flex:1;padding:13px 10px;text-align:center;position:relative;
+}
+.kp-adv-item+.kp-adv-item::before{
+  content:'';position:absolute;left:0;top:10px;bottom:10px;
+  width:1px;background:rgba(255,255,255,.12)
+}
+.kp-adv-num{
+  font-size:21px;font-weight:900;color:#f0a830;
+  margin-bottom:3px;line-height:1;
+}
+.kp-adv-label{
+  font-size:9.5px;color:rgba(255,255,255,.7);
+  letter-spacing:.4px;line-height:1.35
+}
+.kp-adv-icon{font-size:15px;margin-bottom:3px;display:block}
 
 /* ─── Main content ─── */
 .kp-main{padding:26px 28px 0}
@@ -474,19 +506,60 @@ body{
 .print-stripe-top,.print-stripe-bottom{display:none}
 
 @media print{
-  /* Полоска повторяется на каждой странице через position:fixed */
+  /* ── Верхняя полоска (тонкая) ── */
   .print-stripe-top{
     display:block!important;position:fixed;top:0;left:0;right:0;height:7px;z-index:9999;
     background:linear-gradient(90deg,#163863 0%,#255c9d 45%,#d4890e 100%);
     -webkit-print-color-adjust:exact;print-color-adjust:exact;
   }
+  /* ── Нижний футер с логотипом — повторяется на каждой странице ── */
   .print-stripe-bottom{
-    display:block!important;position:fixed;bottom:0;left:0;right:0;height:7px;z-index:9999;
-    background:linear-gradient(90deg,#163863 0%,#255c9d 45%,#d4890e 100%);
+    display:flex!important;align-items:stretch;
+    position:fixed;bottom:0;left:0;right:0;height:30px;z-index:9999;
+    background:linear-gradient(90deg,#0f2040 0%,#173763 40%,#1e4a88 70%,#0f2040 100%);
+    border-top:2.5px solid #d4890e;
     -webkit-print-color-adjust:exact;print-color-adjust:exact;
   }
+  .print-footer-brand{
+    display:flex!important;align-items:center;gap:7px;
+    padding:0 14px;border-right:1px solid rgba(255,255,255,.12);
+  }
+  .print-footer-icon{
+    width:18px;height:18px;border-radius:5px;
+    background:linear-gradient(135deg,#255c9d,#d4890e);
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;line-height:1;flex-shrink:0;
+    -webkit-print-color-adjust:exact;
+  }
+  .print-footer-name{
+    font-size:10px;font-weight:900;color:#fff;letter-spacing:.5px;
+    font-family:'Segoe UI',Arial,sans-serif;
+  }
+  .print-footer-tagline{
+    font-size:7.5px;color:rgba(255,255,255,.55);letter-spacing:.5px;
+    text-transform:uppercase;font-family:'Segoe UI',Arial,sans-serif;
+  }
+  .print-footer-center{
+    flex:1;display:flex!important;align-items:center;justify-content:center;
+    flex-direction:column;gap:1px;
+  }
+  .print-footer-contacts{
+    font-size:9px;color:rgba(255,255,255,.75);letter-spacing:.3px;
+    font-family:'Segoe UI',Arial,sans-serif;
+  }
+  .print-footer-slogan{
+    font-size:7.5px;color:rgba(255,255,255,.45);letter-spacing:.8px;text-transform:uppercase;
+    font-family:'Segoe UI',Arial,sans-serif;
+  }
+  .print-footer-right{
+    display:flex!important;align-items:center;
+    padding:0 14px;border-left:1px solid rgba(255,255,255,.12);
+    font-size:8.5px;font-weight:700;color:#f0a830;letter-spacing:.6px;
+    text-transform:uppercase;font-family:'Segoe UI',Arial,sans-serif;
+    text-align:right;
+  }
 
-  @page{size:A4 portrait;margin:7px 0}
+  @page{size:A4 portrait;margin:7px 0 30px 0}
   html,body{
     width:210mm!important;background:#fff!important;
     margin:0!important;padding:0!important;
@@ -538,13 +611,21 @@ body{
   }
   .row-gap{display:none!important}
 
-  .kp-logo-box,.kp-requisites,.kp-bg-box{min-height:140px!important}
-  .kp-bg-box{height:140px!important;overflow:hidden!important;position:relative!important}
+  .kp-logo-box,.kp-requisites,.kp-bg-box{min-height:136px!important}
+  .kp-bg-box{height:136px!important;overflow:hidden!important;position:relative!important}
   .kp-bg-box img{
     display:block!important;position:absolute!important;
-    inset:5px!important;width:calc(100% - 10px)!important;height:calc(100% - 10px)!important;
-    object-fit:contain!important;opacity:.97!important
+    inset:0!important;width:100%!important;height:100%!important;
+    object-fit:cover!important;opacity:.88!important
   }
+  /* Advantages bar в PDF */
+  .kp-adv-bar{
+    -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
+    break-inside:avoid!important;page-break-inside:avoid!important;
+  }
+  .kp-adv-num{color:#f0a830!important;-webkit-print-color-adjust:exact!important}
+  .kp-adv-label{color:rgba(255,255,255,.72)!important;-webkit-print-color-adjust:exact!important}
+  .kp-adv-icon{-webkit-print-color-adjust:exact!important}
   .kp-header{break-inside:avoid!important;page-break-inside:avoid!important}
   .kp-title-wrap{break-inside:avoid!important;page-break-inside:avoid!important}
   .kp-summary-card{break-inside:avoid!important;page-break-inside:avoid!important}
@@ -715,7 +796,20 @@ body{
 
 <!-- Print stripes (repeat on every page via position:fixed in print mode) -->
 <div class="print-stripe-top"></div>
-<div class="print-stripe-bottom"></div>
+<div class="print-stripe-bottom" id="printFooter">
+  <div class="print-footer-brand">
+    <div class="print-footer-icon">❄️</div>
+    <div>
+      <div class="print-footer-name">Climat Energy</div>
+      <div class="print-footer-tagline">Инженерные системы</div>
+    </div>
+  </div>
+  <div class="print-footer-center">
+    <div class="print-footer-contacts" id="pfContacts">+7 (928) 555-77-70 · info@climatenergy.ru</div>
+    <div class="print-footer-slogan">Проектирование · Поставка · Монтаж под ключ</div>
+  </div>
+  <div class="print-footer-right">Коммерческое<br>предложение</div>
+</div>
 
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
@@ -1029,6 +1123,35 @@ function render(){
       </div>
     </div>
 
+    <!-- Advantages bar -->
+    <div class="kp-adv-bar">
+      <div class="kp-adv-item">
+        <span class="kp-adv-icon">🏆</span>
+        <div class="kp-adv-num">15+</div>
+        <div class="kp-adv-label">лет на рынке</div>
+      </div>
+      <div class="kp-adv-item">
+        <span class="kp-adv-icon">🏗️</span>
+        <div class="kp-adv-num">500+</div>
+        <div class="kp-adv-label">реализованных<br>объектов</div>
+      </div>
+      <div class="kp-adv-item">
+        <span class="kp-adv-icon">✅</span>
+        <div class="kp-adv-num">3 года</div>
+        <div class="kp-adv-label">гарантия<br>на монтаж</div>
+      </div>
+      <div class="kp-adv-item">
+        <span class="kp-adv-icon">❄️</span>
+        <div class="kp-adv-num">6</div>
+        <div class="kp-adv-label">направлений<br>инженерии</div>
+      </div>
+      <div class="kp-adv-item">
+        <span class="kp-adv-icon">🚀</span>
+        <div class="kp-adv-num">24/7</div>
+        <div class="kp-adv-label">техническая<br>поддержка</div>
+      </div>
+    </div>
+
     <div class="kp-main">
       <div class="kp-title-wrap">
         <div class="kp-title-block">
@@ -1097,6 +1220,10 @@ function render(){
   `
 
   document.getElementById('kpPreview').innerHTML = html
+
+  // Обновляем контакты в PDF-футере
+  const pfContacts = document.getElementById('pfContacts')
+  if (pfContacts) pfContacts.textContent = `${g('compPhone')} · ${g('compEmail')}`
 }
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
