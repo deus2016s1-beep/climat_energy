@@ -1319,6 +1319,10 @@ const docState = {
   kpNote: 'Коммерческое предложение действительно 14 календарных дней с даты выставления. Цены указаны с учётом стоимости материалов и монтажных работ.',
   kpTitle: 'Инженерные системы\nи монтажные решения',
   kpSubtitle: 'Подбор оборудования, материалов и монтажных работ по вашему объекту — с понятной структурой и прозрачной стоимостью.',
+  assur0: 'Оборудование только от ведущих мировых производителей',
+  assur1: 'Гарантия 3 года на все виды монтажных работ',
+  assur2: 'Договор · Акты · Исполнительная документация',
+  assur3: 'Техническая поддержка и сервисное обслуживание 24/7',
   adv: [
     { icon: '🏆', num: '15+',    label: 'лет на рынке' },
     { icon: '🏗️', num: '500+',   label: 'реализованных объектов' },
@@ -1463,7 +1467,7 @@ function applyState(s){
   const chk = (id, val) => { const el = document.getElementById(id); if(el) el.checked = !!val }
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? '' }
   // Restore docState fields
-  const fields = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote','kpTitle','kpSubtitle']
+  const fields = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote','kpTitle','kpSubtitle','assur0','assur1','assur2','assur3']
   fields.forEach(k => { if (s[k] !== undefined) docState[k] = s[k] })
   if (s.adv && Array.isArray(s.adv)) docState.adv = s.adv.map(a => ({...a}))
   // Restore controls
@@ -1920,7 +1924,7 @@ function render(){
       <td colspan="8">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div><span class="section-dot">${meta.icon}</span><span>${meta.title}</span></div>
-          <button class="row-del-btn no-print" style="opacity:.55;font-size:10px;padding:2px 8px;border:1px solid rgba(255,255,255,.15);border-radius:5px" onclick="clearSection('${sec}')" title="Очистить раздел">🗑 Очистить</button>
+          <button class="row-del-btn no-print" style="opacity:1;font-size:11px;padding:3px 10px;border:1px solid rgba(249,114,114,.5);border-radius:6px;color:#ff8080;background:rgba(249,114,114,.12);font-weight:600" onclick="clearSection('${sec}')" title="Очистить раздел">🗑 Очистить</button>
         </div>
       </td>
     </tr>`
@@ -2081,10 +2085,10 @@ function render(){
       ${summaryHtml}
 
       <div class="kp-assurance">
-        <div class="kp-assurance-item"><span class="kp-assurance-icon">🏆</span><span>Оборудование только от ведущих мировых производителей</span></div>
-        <div class="kp-assurance-item"><span class="kp-assurance-icon">🛡️</span><span>Гарантия 3 года на все виды монтажных работ</span></div>
-        <div class="kp-assurance-item"><span class="kp-assurance-icon">📋</span><span>Договор · Акты · Исполнительная документация</span></div>
-        <div class="kp-assurance-item"><span class="kp-assurance-icon">🚀</span><span>Техническая поддержка и сервисное обслуживание 24/7</span></div>
+        <div class="kp-assurance-item"><span class="kp-assurance-icon">🏆</span><span class="ie-block" contenteditable="true" spellcheck="false" data-field="assur0">${docState.assur0}</span></div>
+        <div class="kp-assurance-item"><span class="kp-assurance-icon">🛡️</span><span class="ie-block" contenteditable="true" spellcheck="false" data-field="assur1">${docState.assur1}</span></div>
+        <div class="kp-assurance-item"><span class="kp-assurance-icon">📋</span><span class="ie-block" contenteditable="true" spellcheck="false" data-field="assur2">${docState.assur2}</span></div>
+        <div class="kp-assurance-item"><span class="kp-assurance-icon">🚀</span><span class="ie-block" contenteditable="true" spellcheck="false" data-field="assur3">${docState.assur3}</span></div>
       </div>
 
       <div class="kp-table-wrap">
