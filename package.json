@@ -5,9 +5,9 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win --x64",
-    "build:portable": "electron-builder --win portable --x64",
-    "build:installer": "electron-builder --win nsis --x64"
+    "build": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --x64",
+    "build:portable": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win portable --x64",
+    "build:installer": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis --x64"
   },
   "build": {
     "appId": "com.climatenergy.kp",
@@ -27,27 +27,22 @@
       "target": [
         {
           "target": "zip",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         },
         {
           "target": "portable",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         },
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ],
       "icon": "assets/icon.ico",
       "sign": null,
       "signingHashAlgorithms": null,
-      "forceCodeSigning": false
+      "forceCodeSigning": false,
+      "verifyUpdateCodeSignature": false
     },
     "nsis": {
       "oneClick": false,
@@ -61,16 +56,12 @@
       "artifactName": "КП-Climat-Energy-Portable.exe"
     }
   },
-  "keywords": [
-    "commercial-proposal",
-    "hvac",
-    "climate",
-    "energy"
-  ],
+  "keywords": ["commercial-proposal", "hvac", "climate", "energy"],
   "author": "Climat Energy",
   "license": "UNLICENSED",
   "devDependencies": {
     "@electron/packager": "^19.1.0",
+    "cross-env": "^7.0.3",
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8"
   }
