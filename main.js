@@ -91,12 +91,16 @@ function createWindow() {
       label: 'Справка',
       submenu: [
         {
+          label: 'Инструкция',
+          click: () => { if (mainWindow) mainWindow.webContents.executeJavaScript('openHelp()') }
+        },
+        {
           label: 'О программе',
           click: () => dialog.showMessageBox(mainWindow, {
             type: 'info',
             title: 'О программе',
             message: 'КП — Генератор коммерческих предложений',
-            detail: 'Версия 2.3\n© 2025 Climat Energy\n\nПрограмма для создания, сохранения и экспорта КП в PDF.\nАвтонумерация · История КП · Быстрый доступ',
+            detail: 'Версия 3.0\n© 2025 Climat Energy\n\nРазработчик: Кураев К.\n\nГенерация КП · Редактирование в превью · Шаблоны\nСкидки/наценки · Экспорт PDF и Excel · История',
             buttons: ['OK']
           })
         }
@@ -350,25 +354,23 @@ ipcMain.handle('reset-logo', () => {
   return { ok: true }
 })
 
-// ─── IPC: Экспорт в Excel (CSV) ─────────────────────────────────────────
-ipcMain.handle('export-excel', async (_event, csvContent) => {
+// ─── IPC: Экспорт в Excel (HTML) ────────────────────────────────────────
+ipcMain.handle('export-excel', async (_event, htmlContent) => {
   const win = mainWindow
   if (!win) return { ok: false }
 
   const { filePath, canceled } = await dialog.showSaveDialog(win, {
     title: 'Экспорт в Excel',
-    defaultPath: `КП_Climat_Energy_${new Date().toISOString().slice(0, 10)}.csv`,
+    defaultPath: `КП_Climat_Energy_${new Date().toISOString().slice(0, 10)}.xls`,
     filters: [
-      { name: 'CSV файлы (Excel)', extensions: ['csv'] },
+      { name: 'Excel (HTML)', extensions: ['xls'] },
     ],
   })
 
   if (canceled || !filePath) return { ok: false, canceled: true }
 
   try {
-    // BOM for correct Cyrillic in Excel
-    const bom = '\uFEFF'
-    fs.writeFileSync(filePath, bom + csvContent, 'utf8')
+    fs.writeFileSync(filePath, htmlContent, 'utf8')
     shell.showItemInFolder(filePath)
     return { ok: true, path: filePath }
   } catch (err) {
