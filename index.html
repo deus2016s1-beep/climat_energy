@@ -515,6 +515,86 @@ body{
 }
 .btn-new-kp:hover{background:rgba(212,137,14,.20)}
 
+/* ── Discount ── */
+.discount-row{
+  display:flex;gap:5px;align-items:center;margin-top:8px;
+}
+.discount-row select,.discount-row input{
+  background:rgba(255,255,255,.04);border:1px solid rgba(100,150,230,.15);
+  border-radius:7px;color:#dce9ff;padding:6px 8px;font-size:11px;font-family:inherit;outline:none;
+}
+.discount-row select{flex:0 0 auto;min-width:70px}
+.discount-row input{flex:1;max-width:80px}
+.discount-row .disc-label{font-size:10.5px;color:var(--text-muted)}
+.discount-btns{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.disc-quick{
+  padding:4px 10px;border-radius:7px;cursor:pointer;font-size:10.5px;font-family:inherit;
+  background:rgba(255,255,255,.04);border:1px solid rgba(100,150,230,.12);color:#b8d0f0;
+  transition:background .12s;
+}
+.disc-quick:hover{background:rgba(255,255,255,.08)}
+.disc-quick.active{background:rgba(47,127,215,.2);border-color:rgba(47,127,215,.35);color:#7ac3ff}
+
+/* ── Templates ── */
+.tpl-list{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.tpl-item{
+  display:flex;align-items:center;gap:6px;padding:7px 10px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(100,150,230,.10);
+  border-radius:9px;cursor:pointer;font-size:11.5px;color:#b8d0f0;
+  transition:background .12s;
+}
+.tpl-item:hover{background:rgba(255,255,255,.07)}
+.tpl-item-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:#dce9ff}
+.tpl-del{
+  background:none;border:none;color:#f97272;cursor:pointer;font-size:13px;
+  opacity:.5;transition:opacity .12s;padding:0 2px;
+}
+.tpl-del:hover{opacity:1}
+.tpl-save-row{display:flex;gap:5px;margin-top:6px}
+.tpl-save-row input{
+  flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(100,150,230,.12);
+  border-radius:7px;color:#dce9ff;padding:6px 8px;font-size:11px;font-family:inherit;outline:none;
+}
+.tpl-save-row button{
+  padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-family:inherit;
+  background:rgba(47,127,215,.14);border:1px solid rgba(47,127,215,.25);color:#7ac3ff;
+  transition:background .12s;white-space:nowrap;
+}
+.tpl-save-row button:hover{background:rgba(47,127,215,.25)}
+
+/* ── Logo upload ── */
+.logo-actions{display:flex;gap:5px;margin-top:6px}
+.logo-btn{
+  padding:5px 10px;border-radius:7px;cursor:pointer;font-size:10.5px;font-family:inherit;
+  background:rgba(255,255,255,.04);border:1px solid rgba(100,150,230,.12);color:#b8d0f0;
+  transition:background .12s;
+}
+.logo-btn:hover{background:rgba(255,255,255,.08)}
+.logo-preview{
+  width:60px;height:40px;object-fit:contain;border-radius:6px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(100,150,230,.12);
+  margin-top:6px;
+}
+
+/* ── Extra footer buttons ── */
+.btn-kp-row-2{display:flex;gap:8px;margin-bottom:8px}
+.btn-kp-dup{
+  flex:1;padding:9px 6px;border-radius:11px;cursor:pointer;
+  font-size:11.5px;font-weight:700;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:filter .15s,transform .15s;
+  background:rgba(138,78,214,.12);border:1px solid rgba(138,78,214,.25);color:#c4a0f0;
+}
+.btn-kp-dup:hover{transform:translateY(-1px);filter:brightness(1.12)}
+.btn-kp-excel{
+  flex:1;padding:9px 6px;border-radius:11px;cursor:pointer;
+  font-size:11.5px;font-weight:700;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:filter .15s,transform .15s;
+  background:rgba(49,160,101,.10);border:1px solid rgba(49,160,101,.22);color:#6de0a4;
+}
+.btn-kp-excel:hover{transform:translateY(-1px);filter:brightness(1.12)}
+
 /* ══════════════════════════════════════════════
    SCROLLBAR
 ══════════════════════════════════════════════ */
@@ -735,6 +815,18 @@ body{
       </div>
     </div>
 
+    <!-- Templates -->
+    <div class="sb-section">
+      <div class="sb-section-title"><span>📦</span> Шаблоны</div>
+      <div class="tpl-list" id="tplList">
+        <div class="recent-empty">Нет сохранённых шаблонов</div>
+      </div>
+      <div class="tpl-save-row">
+        <input type="text" id="tplName" placeholder="Имя шаблона (напр. Квартира)" maxlength="50">
+        <button onclick="saveTemplate()">Сохранить</button>
+      </div>
+    </div>
+
     <!-- Company info -->
     <div class="sb-section">
       <div class="sb-section-title"><span>🏢</span> Компания</div>
@@ -756,6 +848,12 @@ body{
       <input class="sb-input" id="compBIK" value="040702615" oninput="render()">
       <div class="sb-label">Директор (подпись)</div>
       <input class="sb-input" id="compDir" value="Рамазанов Ф.Д." oninput="render()">
+      <div class="sb-label" style="margin-top:10px">Логотип компании</div>
+      <div class="logo-actions">
+        <button class="logo-btn" onclick="pickLogo()">📁 Загрузить</button>
+        <button class="logo-btn" onclick="resetLogo()">↩️ Стандартный</button>
+      </div>
+      <img class="logo-preview" id="logoPreview" src="" alt="" style="display:none">
     </div>
 
     <!-- KP meta -->
@@ -772,6 +870,23 @@ body{
           <span class="switch-slider"></span>
         </label>
         <span class="t-label">Добавить НДС 20%</span>
+      </div>
+      <div class="sb-label" style="margin-top:12px">Скидка / Наценка</div>
+      <div class="discount-row">
+        <select id="discType" onchange="render()">
+          <option value="none">—</option>
+          <option value="discount">Скидка</option>
+          <option value="markup">Наценка</option>
+        </select>
+        <input type="number" id="discValue" value="0" min="0" max="99" step="1" oninput="render()" style="width:60px">
+        <span class="disc-label">%</span>
+      </div>
+      <div class="discount-btns">
+        <button class="disc-quick" onclick="setDiscount(5)">5%</button>
+        <button class="disc-quick" onclick="setDiscount(10)">10%</button>
+        <button class="disc-quick" onclick="setDiscount(15)">15%</button>
+        <button class="disc-quick" onclick="setDiscount(20)">20%</button>
+        <button class="disc-quick" onclick="setDiscount(0)">Сброс</button>
       </div>
       <div class="sb-label" style="margin-top:12px">Примечание / Срок действия</div>
       <textarea class="sb-textarea" id="kpNote" oninput="render()">Коммерческое предложение действительно 14 календарных дней с даты выставления. Цены указаны с учётом стоимости материалов и монтажных работ.</textarea>
@@ -833,6 +948,15 @@ body{
       </button>
       <button class="btn-kp btn-kp-load" onclick="loadKPFile()" title="Открыть сохранённый КП (Ctrl+O)">
         <span>📂</span><span>Открыть КП</span>
+      </button>
+    </div>
+    <!-- Duplicate & Excel row -->
+    <div class="btn-kp-row-2">
+      <button class="btn-kp-dup" onclick="duplicateKP()" title="Дублировать КП с новым номером">
+        <span>📋</span><span>Дублировать</span>
+      </button>
+      <button class="btn-kp-excel" onclick="exportExcel()" title="Экспорт таблицы в CSV (Excel)">
+        <span>📊</span><span>Excel</span>
       </button>
     </div>
     <!-- PDF button -->
@@ -981,6 +1105,36 @@ function showToast(msg, isError = false){
   toastTimer = setTimeout(() => el.classList.remove('show'), 4000)
 }
 
+// ─── DISCOUNT ──────────────────────────────────────────────────────────────
+function setDiscount(val){
+  const type = document.getElementById('discType')
+  const input = document.getElementById('discValue')
+  if (val === 0) {
+    type.value = 'none'
+    input.value = 0
+  } else {
+    if (type.value === 'none') type.value = 'discount'
+    input.value = val
+  }
+  // Highlight active button
+  document.querySelectorAll('.disc-quick').forEach(b => b.classList.remove('active'))
+  if (val > 0) {
+    document.querySelectorAll('.disc-quick').forEach(b => {
+      if (b.textContent.trim() === val + '%') b.classList.add('active')
+    })
+  }
+  render()
+}
+
+function getDiscountMultiplier(){
+  const type = document.getElementById('discType')?.value || 'none'
+  const val = parseFloat(document.getElementById('discValue')?.value) || 0
+  if (type === 'none' || val === 0) return 1
+  if (type === 'discount') return 1 - val / 100
+  if (type === 'markup') return 1 + val / 100
+  return 1
+}
+
 // ─── SAVE PDF ──────────────────────────────────────────────────────────────
 async function savePDF(){
   const btn = document.getElementById('btnPDF')
@@ -1017,6 +1171,7 @@ function collectState(){
     compBank: f('compBank'), compBIK: f('compBIK'), compDir: f('compDir'),
     kpNum: f('kpNum'), kpClient: f('kpClient'), kpNote: f('kpNote'),
     includeVat: b('includeVat'),
+    discType: f('discType'), discValue: f('discValue'),
     chk_heat: b('chk_heat'), chk_vent: b('chk_vent'), chk_ac: b('chk_ac'),
     chk_video: b('chk_video'), chk_fire: b('chk_fire'),
     items: JSON.parse(JSON.stringify(items)),
@@ -1033,6 +1188,8 @@ function applyState(s){
   set('compBank', s.compBank); set('compBIK', s.compBIK); set('compDir', s.compDir)
   set('kpNum', s.kpNum); set('kpClient', s.kpClient); set('kpNote', s.kpNote)
   chk('includeVat', s.includeVat)
+  if (s.discType) set('discType', s.discType)
+  if (s.discValue !== undefined) set('discValue', s.discValue)
   chk('chk_heat', s.chk_heat); chk('chk_vent', s.chk_vent); chk('chk_ac', s.chk_ac)
   chk('chk_video', s.chk_video); chk('chk_fire', s.chk_fire)
   if (s.items) {
@@ -1085,6 +1242,9 @@ async function newKP(){
   document.getElementById('kpClient').value = ''
   document.getElementById('kpNote').value = 'Коммерческое предложение действительно 14 календарных дней с даты выставления. Цены указаны с учётом стоимости материалов и монтажных работ.'
   document.getElementById('includeVat').checked = true
+  document.getElementById('discType').value = 'none'
+  document.getElementById('discValue').value = 0
+  document.querySelectorAll('.disc-quick').forEach(b => b.classList.remove('active'))
   document.getElementById('chk_heat').checked = true
   document.getElementById('chk_vent').checked = true
   document.getElementById('chk_ac').checked = true
@@ -1153,6 +1313,195 @@ async function openRecentKP(filePath){
   }
 }
 
+// ─── DUPLICATE KP ───────────────────────────────────────────────────────────
+async function duplicateKP(){
+  // Get next auto-number, keep everything else the same
+  if (window.electronAPI?.getNextKpNum) {
+    const num = await window.electronAPI.getNextKpNum()
+    document.getElementById('kpNum').value = num
+  } else {
+    const stored = parseInt(localStorage.getItem('lastKpNum') || '0', 10) + 1
+    localStorage.setItem('lastKpNum', String(stored))
+    const year = new Date().getFullYear()
+    document.getElementById('kpNum').value = String(stored).padStart(3, '0') + ' / ' + year
+  }
+  render()
+  showToast('КП дублировано с новым номером')
+}
+
+// ─── TEMPLATES ──────────────────────────────────────────────────────────────
+async function loadTemplatesList(){
+  const listEl = document.getElementById('tplList')
+  if (!listEl) return
+
+  let tpls = []
+  if (window.electronAPI?.getTemplates) {
+    tpls = await window.electronAPI.getTemplates()
+  }
+
+  if (!tpls || tpls.length === 0) {
+    listEl.innerHTML = '<div class="recent-empty">Нет сохранённых шаблонов</div>'
+    return
+  }
+
+  listEl.innerHTML = tpls.map(t => {
+    const safeFile = String(t.file).replace(/'/g, "\\'")
+    return `<div class="tpl-item">
+      <span onclick="applyTemplate('${safeFile}')" style="flex:1;display:flex;align-items:center;gap:6px;cursor:pointer">
+        <span>📦</span><span class="tpl-item-name">${t.name}</span>
+      </span>
+      <button class="tpl-del" onclick="deleteTemplate('${safeFile}')" title="Удалить шаблон">✕</button>
+    </div>`
+  }).join('')
+}
+
+async function saveTemplate(){
+  const nameEl = document.getElementById('tplName')
+  const name = nameEl?.value?.trim()
+  if (!name) return showToast('Введите имя шаблона', true)
+  if (!window.electronAPI?.saveTemplate) return showToast('Функция доступна только в приложении', true)
+
+  const sections = {}
+  Object.keys(SECTIONS).forEach(sec => {
+    sections[sec] = document.getElementById('chk_' + sec)?.checked ?? false
+  })
+
+  const result = await window.electronAPI.saveTemplate({
+    name,
+    items: JSON.parse(JSON.stringify(items)),
+    sections,
+  })
+  if (result?.ok) {
+    nameEl.value = ''
+    showToast('Шаблон «' + name + '» сохранён')
+    loadTemplatesList()
+  }
+}
+
+async function applyTemplate(fileName){
+  if (!window.electronAPI?.loadTemplate) return
+  const result = await window.electronAPI.loadTemplate(fileName)
+  if (result?.ok && result.data) {
+    // Apply items
+    if (result.data.items) {
+      Object.keys(items).forEach(k => {
+        if (result.data.items[k]) items[k] = result.data.items[k].map(r => [...r])
+      })
+    }
+    // Apply section checkboxes
+    if (result.data.sections) {
+      Object.entries(result.data.sections).forEach(([sec, checked]) => {
+        const el = document.getElementById('chk_' + sec)
+        if (el) el.checked = checked
+      })
+    }
+    buildSidebarItems()
+    render()
+    showToast('Шаблон «' + (result.data.name || '') + '» применён')
+  }
+}
+
+async function deleteTemplate(fileName){
+  if (!window.electronAPI?.deleteTemplate) return
+  await window.electronAPI.deleteTemplate(fileName)
+  showToast('Шаблон удалён')
+  loadTemplatesList()
+}
+
+// ─── LOGO ───────────────────────────────────────────────────────────────────
+let customLogoData = null
+
+async function pickLogo(){
+  if (!window.electronAPI?.pickLogo) return showToast('Функция доступна только в приложении', true)
+  const result = await window.electronAPI.pickLogo()
+  if (result?.ok && result.data) {
+    customLogoData = result.data
+    updateLogoPreview()
+    render()
+    showToast('Логотип обновлён')
+  }
+}
+
+async function resetLogo(){
+  customLogoData = null
+  if (window.electronAPI?.resetLogo) await window.electronAPI.resetLogo()
+  updateLogoPreview()
+  render()
+  showToast('Логотип сброшен на стандартный')
+}
+
+function updateLogoPreview(){
+  const prev = document.getElementById('logoPreview')
+  if (prev) {
+    if (customLogoData) {
+      prev.src = customLogoData
+      prev.style.display = 'block'
+    } else {
+      prev.style.display = 'none'
+    }
+  }
+}
+
+function getCurrentLogo(){
+  return customLogoData || IMG_LOGO
+}
+
+// ─── EXCEL EXPORT ───────────────────────────────────────────────────────────
+async function exportExcel(){
+  const includeVat = document.getElementById('includeVat')?.checked ?? true
+  const vatRate = 0.20
+  const discMul = getDiscountMultiplier()
+
+  let rows = []
+  rows.push(['Раздел','№','Наименование','Кол-во','Ед.изм.','Цена, руб.','Сумма, руб.'].join(';'))
+
+  let grandTotal = 0
+  Object.entries(SECTIONS).forEach(([sec, meta]) => {
+    const chk = document.getElementById('chk_' + sec)
+    if (!chk?.checked) return
+    const secItems = items[sec]
+    if (!secItems?.length) return
+
+    let secTotal = 0
+    secItems.forEach((row, i) => {
+      const qty = parseFloat(row[1]) || 0
+      const price = (parseFloat(row[3]) || 0) * discMul
+      const sum = qty * price
+      secTotal += sum
+      rows.push([meta.title, i+1, '"' + (row[0]||'').replace(/"/g,'""') + '"', qty, row[2]||'шт', price.toFixed(2), sum.toFixed(2)].join(';'))
+    })
+
+    rows.push(['','','Итого по разделу «' + meta.title + '»','','','',secTotal.toFixed(2)].join(';'))
+    grandTotal += secTotal
+    rows.push('')
+  })
+
+  const nds = includeVat ? grandTotal * vatRate : 0
+  const total = grandTotal + nds
+
+  rows.push(['','','ИТОГО БЕЗ НДС','','','',grandTotal.toFixed(2)].join(';'))
+  if (includeVat) {
+    rows.push(['','','НДС 20%','','','',nds.toFixed(2)].join(';'))
+    rows.push(['','','ОБЩАЯ СУММА (С НДС)','','','',total.toFixed(2)].join(';'))
+  }
+
+  const csv = rows.join('\n')
+
+  if (window.electronAPI?.exportExcel) {
+    const result = await window.electronAPI.exportExcel(csv)
+    if (result?.ok) showToast('Экспорт в Excel: ' + result.path.split(/[\\/]/).pop())
+    else if (!result?.canceled) showToast('Ошибка экспорта: ' + (result?.error || '?'), true)
+  } else {
+    // Browser fallback - download
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'КП_Climat_Energy.csv'
+    a.click()
+    showToast('CSV файл скачан')
+  }
+}
+
 // ─── KEYBOARD SHORTCUTS ────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   const ctrl = e.ctrlKey || e.metaKey
@@ -1168,6 +1517,9 @@ function render(){
   const today = new Date().toLocaleDateString('ru-RU')
   const includeVat = document.getElementById('includeVat')?.checked ?? true
   const vatRate = 0.20
+  const discMul = getDiscountMultiplier()
+  const discType = document.getElementById('discType')?.value || 'none'
+  const discVal = parseFloat(document.getElementById('discValue')?.value) || 0
 
   let tableRows = ''
   let grandTotal = 0
@@ -1186,7 +1538,7 @@ function render(){
     let secTotal = 0
     secItems.forEach((row, i) => {
       const qty   = parseFloat(row[1]) || 0
-      const price = parseFloat(row[3]) || 0
+      const price = (parseFloat(row[3]) || 0) * discMul
       const sum   = qty * price
       secTotal += sum
       const alt = i % 2 ? 'is-alt' : ''
@@ -1212,7 +1564,13 @@ function render(){
   const nds   = includeVat ? grandTotal * vatRate : 0
   const total = grandTotal + nds
 
-  const totalRows = includeVat
+  const discLabel = discType === 'discount' && discVal > 0
+    ? `<tr class="row-nds"><td colspan="5" style="text-align:right;padding:11px 16px;color:#d14e4e;font-style:italic">Применена скидка ${discVal}%</td><td style="padding:11px 16px"></td></tr>`
+    : discType === 'markup' && discVal > 0
+    ? `<tr class="row-nds"><td colspan="5" style="text-align:right;padding:11px 16px;color:#31a065;font-style:italic">Применена наценка ${discVal}%</td><td style="padding:11px 16px"></td></tr>`
+    : ''
+
+  const totalRows = (discLabel) + (includeVat
     ? `<tr class="row-grand">
         <td colspan="5" style="text-align:right;padding:12px 16px">ИТОГО БЕЗ НДС:</td>
         <td style="padding:12px 16px">${fmt(grandTotal)}</td>
@@ -1228,7 +1586,7 @@ function render(){
     : `<tr class="row-total-nds">
         <td colspan="5" style="text-align:right;padding:14px 16px">ОБЩАЯ СУММА:</td>
         <td style="padding:14px 16px">${fmt(grandTotal)}</td>
-      </tr>`
+      </tr>`)
 
   const summaryCards = Object.entries(secTotals)
     .filter(([, v]) => v > 0)
@@ -1241,8 +1599,9 @@ function render(){
       </div>`
     }).join('')
 
+  const discNote = discType === 'discount' && discVal > 0 ? ` (−${discVal}%)` : discType === 'markup' && discVal > 0 ? ` (+${discVal}%)` : ''
   const totalCard = `<div class="kp-summary-card sum-total">
-    <div class="sum-top">${includeVat ? 'Итог · с НДС' : 'Итог · без НДС'}</div>
+    <div class="sum-top">${includeVat ? 'Итог · с НДС' : 'Итог · без НДС'}${discNote}</div>
     <div class="sum-title"><span>💼</span><span>Общая стоимость</span></div>
     <div class="sum-value">${fmt(total)} ₽</div>
   </div>`
@@ -1256,7 +1615,7 @@ function render(){
 
     <div class="kp-header">
       <div class="kp-logo-box">
-        <img src="${IMG_LOGO}" alt="Логотип">
+        <img src="${getCurrentLogo()}" alt="Логотип">
       </div>
       <div class="kp-requisites">
         <b>${g('compName')}</b>
@@ -1384,9 +1743,21 @@ if (footerLogo) footerLogo.src = IMG_ICON
 buildSidebarItems()
 render()
 
-// Загружаем историю и устанавливаем текущий номер КП
+// Загружаем историю, шаблоны, логотип и номер КП
 ;(async () => {
   loadRecentFiles()
+  loadTemplatesList()
+
+  // Загружаем кастомный логотип
+  if (window.electronAPI?.getCustomLogo) {
+    const logo = await window.electronAPI.getCustomLogo()
+    if (logo) {
+      customLogoData = logo
+      updateLogoPreview()
+      render()
+    }
+  }
+
   // При первом запуске показываем текущий номер (без инкремента)
   if (window.electronAPI?.getCurrentKpNum) {
     const curNum = await window.electronAPI.getCurrentKpNum()

@@ -256,6 +256,126 @@ ipcMain.handle('open-recent-file', async (_event, filePath) => {
   }
 })
 
+// ─── IPC: Шаблоны КП ─────────────────────────────────────────────────────
+function getTemplatesDir() {
+  const dir = path.join(app.getPath('userData'), 'templates')
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  return dir
+}
+
+ipcMain.handle('get-templates', () => {
+  const dir = getTemplatesDir()
+  try {
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.tpl.json'))
+    return files.map(f => {
+      try {
+        const raw = fs.readFileSync(path.join(dir, f), 'utf8')
+        const data = JSON.parse(raw)
+        return { name: data.name || f.replace('.tpl.json', ''), file: f }
+      } catch { return { name: f.replace('.tpl.json', ''), file: f } }
+    })
+  } catch { return [] }
+})
+
+ipcMain.handle('save-template', (_event, { name, items, sections }) => {
+  const dir = getTemplatesDir()
+  const safeName = name.replace(/[\\/:*?"<>|]/g, '_')
+  const filePath = path.join(dir, safeName + '.tpl.json')
+  fs.writeFileSync(filePath, JSON.stringify({ name, items, sections }, null, 2), 'utf8')
+  return { ok: true }
+})
+
+ipcMain.handle('load-template', (_event, fileName) => {
+  const filePath = path.join(getTemplatesDir(), fileName)
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8')
+    return { ok: true, data: JSON.parse(raw) }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+})
+
+ipcMain.handle('delete-template', (_event, fileName) => {
+  const filePath = path.join(getTemplatesDir(), fileName)
+  try {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+})
+
+// ─── IPC: Логотип компании ───────────────────────────────────────────────
+ipcMain.handle('pick-logo', async () => {
+  const win = mainWindow
+  if (!win) return { ok: false }
+
+  const { filePaths, canceled } = await dialog.showOpenDialog(win, {
+    title: 'Выбрать логотип',
+    filters: [
+      { name: 'Изображения', extensions: ['png', 'jpg', 'jpeg', 'svg', 'webp', 'ico'] },
+    ],
+    properties: ['openFile'],
+  })
+
+  if (canceled || !filePaths?.length) return { ok: false, canceled: true }
+
+  try {
+    const buf = fs.readFileSync(filePaths[0])
+    const ext = path.extname(filePaths[0]).toLowerCase().slice(1)
+    const mimeMap = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', svg:'image/svg+xml', webp:'image/webp', ico:'image/x-icon' }
+    const mime = mimeMap[ext] || 'image/png'
+    const base64 = `data:${mime};base64,${buf.toString('base64')}`
+
+    // Save to config for persistence
+    const config = readConfig()
+    config.customLogo = base64
+    writeConfig(config)
+
+    return { ok: true, data: base64 }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+})
+
+ipcMain.handle('get-custom-logo', () => {
+  const config = readConfig()
+  return config.customLogo || null
+})
+
+ipcMain.handle('reset-logo', () => {
+  const config = readConfig()
+  delete config.customLogo
+  writeConfig(config)
+  return { ok: true }
+})
+
+// ─── IPC: Экспорт в Excel (CSV) ─────────────────────────────────────────
+ipcMain.handle('export-excel', async (_event, csvContent) => {
+  const win = mainWindow
+  if (!win) return { ok: false }
+
+  const { filePath, canceled } = await dialog.showSaveDialog(win, {
+    title: 'Экспорт в Excel',
+    defaultPath: `КП_Climat_Energy_${new Date().toISOString().slice(0, 10)}.csv`,
+    filters: [
+      { name: 'CSV файлы (Excel)', extensions: ['csv'] },
+    ],
+  })
+
+  if (canceled || !filePath) return { ok: false, canceled: true }
+
+  try {
+    // BOM for correct Cyrillic in Excel
+    const bom = '\uFEFF'
+    fs.writeFileSync(filePath, bom + csvContent, 'utf8')
+    shell.showItemInFolder(filePath)
+    return { ok: true, path: filePath }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+})
+
 app.whenReady().then(() => {
   createWindow()
   app.on('activate', () => {
