@@ -806,6 +806,108 @@ tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
 }
 
 /* ══════════════════════════════════════════════
+   THEMES
+══════════════════════════════════════════════ */
+
+/* Theme: Синяя */
+html[data-theme="blue"] {
+  --bg:#091d55;--panel:#0d2470;--panel-2:#122c8a;
+  --panel-border:rgba(120,180,255,.15);--text:#e8f0ff;--text-muted:#8ab0e0;
+}
+html[data-theme="blue"] body{background:linear-gradient(160deg,#091d55 0%,#0d2470 50%,#122080 100%)}
+html[data-theme="blue"] .sidebar{background:linear-gradient(180deg,#071848 0%,#051240 100%)}
+html[data-theme="blue"] .sidebar-brand{background:linear-gradient(135deg,rgba(10,35,130,.7),rgba(7,22,80,.9))}
+
+/* Theme: Корпоративная */
+html[data-theme="corporate"] {
+  --bg:#161622;--panel:#1e1e2e;--panel-2:#252540;
+  --panel-border:rgba(180,180,255,.08);--text:#e0e0f0;--text-muted:#9090b0;
+  --gold:#c0873a;--gold-light:#e0a050;
+}
+html[data-theme="corporate"] body{background:linear-gradient(160deg,#161622 0%,#1e1e2e 50%,#1a1a30 100%)}
+html[data-theme="corporate"] .sidebar{background:linear-gradient(180deg,#121220 0%,#0e0e1a 100%)}
+html[data-theme="corporate"] .sidebar-brand{background:linear-gradient(135deg,rgba(30,30,60,.7),rgba(15,15,35,.9))}
+html[data-theme="corporate"] .kp-top-stripe,html[data-theme="corporate"] .kp-bottom-stripe{background:linear-gradient(90deg,#2a2a4a 0%,#3a3a6a 45%,#c0873a 100%)}
+html[data-theme="corporate"] .kp-adv-bar{background:linear-gradient(90deg,#2a2a4a 0%,#3a3a6a 50%,#2a2a4a 100%)}
+
+/* Theme: Минималистичная */
+html[data-theme="minimal"] {
+  --bg:#f0f4f8;--panel:#ffffff;--panel-2:#e8edf5;
+  --panel-border:rgba(0,0,100,.07);--text:#1a2035;--text-muted:#6b7280;
+  --shadow:0 8px 32px rgba(0,0,100,.09);
+}
+html[data-theme="minimal"] body{background:#f0f4f8}
+html[data-theme="minimal"] .sidebar{background:#ffffff;border-right:1px solid #e2e8f0}
+html[data-theme="minimal"] .sidebar-brand{background:#f8fafc;border-bottom:1px solid #e2e8f0}
+html[data-theme="minimal"] .brand-name{color:#1a2035}
+html[data-theme="minimal"] .brand-tagline{color:#6b7280}
+html[data-theme="minimal"] .brand-subtitle{color:#6b7280}
+html[data-theme="minimal"] .brand-icon div{color:#1a2035}
+html[data-theme="minimal"] .sb-section{background:#f8fafc;border-color:#e2e8f0}
+html[data-theme="minimal"] .sb-section-title{color:#3b82f6}
+html[data-theme="minimal"] .sb-label{color:#6b7280}
+html[data-theme="minimal"] .sb-input,html[data-theme="minimal"] .sb-textarea{background:#fff;border-color:#e2e8f0;color:#1a2035}
+html[data-theme="minimal"] .toggle-row .t-label{color:#374151}
+html[data-theme="minimal"] .switch-slider{background:#e2e8f0;border-color:#d1d5db}
+html[data-theme="minimal"] .recent-item{background:#f8fafc;border-color:#e2e8f0;color:#374151}
+html[data-theme="minimal"] .recent-item:hover{background:#eff6ff;border-color:#bfdbfe}
+html[data-theme="minimal"] .recent-item-name{color:#1a2035}
+html[data-theme="minimal"] .recent-empty{color:#9ca3af}
+html[data-theme="minimal"] .tpl-item{background:#f8fafc;border-color:#e2e8f0}
+html[data-theme="minimal"] .tpl-item-name{color:#1a2035}
+html[data-theme="minimal"] .tpl-save-row input{background:#fff;border-color:#e2e8f0;color:#1a2035}
+html[data-theme="minimal"] .tpl-save-row button{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.22);color:#3b82f6}
+html[data-theme="minimal"] .disc-quick{background:#f8fafc;border-color:#e2e8f0;color:#374151}
+html[data-theme="minimal"] .logo-btn{background:#f8fafc;border-color:#e2e8f0;color:#374151}
+html[data-theme="minimal"] .btn-new-kp{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.22);color:#3b82f6}
+html[data-theme="minimal"] .discount-row select,html[data-theme="minimal"] .discount-row input{background:#fff;border-color:#e2e8f0;color:#1a2035}
+html[data-theme="minimal"] .sidebar-footer{background:#f8fafc;border-top-color:#e2e8f0}
+html[data-theme="minimal"] ::-webkit-scrollbar-thumb{background:#cbd5e1}
+html[data-theme="minimal"] .autosave-interval{background:#fff;border-color:#e2e8f0;color:#1a2035}
+html[data-theme="minimal"] .theme-label{color:#6b7280}
+html[data-theme="minimal"] .add-btn{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.2);color:#3b82f6}
+html[data-theme="minimal"] .item-row input{background:#fff;border-color:#e2e8f0;color:#1a2035}
+
+/* Theme selector buttons */
+.theme-selector{display:flex;gap:6px;margin-top:8px}
+.theme-item{text-align:center;flex:1}
+.theme-btn{
+  width:100%;height:28px;border-radius:8px;border:2px solid transparent;
+  cursor:pointer;transition:border-color .2s,transform .15s;display:block;
+}
+.theme-btn:hover{transform:translateY(-1px)}
+.theme-btn.active{border-color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.4)}
+html[data-theme="minimal"] .theme-btn.active{border-color:#3b82f6;box-shadow:0 0 0 1px rgba(59,130,246,.3)}
+.theme-btn[data-theme="dark"]{background:linear-gradient(135deg,#08132a,#0e1e3a)}
+.theme-btn[data-theme="blue"]{background:linear-gradient(135deg,#091d55,#122c8a)}
+.theme-btn[data-theme="corporate"]{background:linear-gradient(135deg,#161622,#2a2a4a)}
+.theme-btn[data-theme="minimal"]{background:linear-gradient(135deg,#f0f4f8,#dde4f0);border-color:#e2e8f0}
+.theme-label{font-size:9px;color:rgba(255,255,255,.6);margin-top:3px}
+
+/* ══════════════════════════════════════════════
+   AUTO-SAVE
+══════════════════════════════════════════════ */
+.autosave-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.autosave-status{font-size:9.5px;color:var(--text-muted);margin-top:4px;min-height:14px}
+.autosave-interval{
+  background:rgba(255,255,255,.04);border:1px solid rgba(100,150,230,.15);
+  border-radius:7px;color:#dce9ff;padding:4px 6px;font-size:11px;font-family:inherit;outline:none;
+}
+
+/* ══════════════════════════════════════════════
+   DRAG & DROP
+══════════════════════════════════════════════ */
+.drag-handle{
+  cursor:grab!important;color:rgba(100,150,230,.3);font-size:15px;
+  user-select:none;padding:0 2px!important;text-align:center;
+  transition:color .12s;line-height:1;
+}
+.drag-handle:hover{color:rgba(100,150,230,.75)}
+.drag-handle:active{cursor:grabbing!important}
+.kp-line.dragging{opacity:.3}
+.kp-line.drag-over>td{background:rgba(47,127,215,.12)!important;outline:1px dashed rgba(47,127,215,.5)}
+
+/* ══════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════ */
 @media(max-width:1380px){
@@ -878,7 +980,29 @@ tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
       <div style="font-size:10.5px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
         Все данные редактируются прямо в превью — просто кликните на нужное поле
       </div>
-      <div class="sb-label">НДС</div>
+
+      <!-- Theme selector -->
+      <div class="sb-label">Тема оформления</div>
+      <div class="theme-selector">
+        <div class="theme-item">
+          <button class="theme-btn active" data-theme="dark" onclick="setTheme('dark')" title="Тёмная"></button>
+          <div class="theme-label">Тёмная</div>
+        </div>
+        <div class="theme-item">
+          <button class="theme-btn" data-theme="blue" onclick="setTheme('blue')" title="Синяя"></button>
+          <div class="theme-label">Синяя</div>
+        </div>
+        <div class="theme-item">
+          <button class="theme-btn" data-theme="corporate" onclick="setTheme('corporate')" title="Корпоративная"></button>
+          <div class="theme-label">Корп.</div>
+        </div>
+        <div class="theme-item">
+          <button class="theme-btn" data-theme="minimal" onclick="setTheme('minimal')" title="Минималистичная"></button>
+          <div class="theme-label">Минимал.</div>
+        </div>
+      </div>
+
+      <div class="sb-label" style="margin-top:14px">НДС</div>
       <div class="toggle-row" style="border-bottom:none;padding:6px 0 0">
         <label class="switch">
           <input type="checkbox" id="includeVat" checked onchange="render()">
@@ -909,6 +1033,24 @@ tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
         <button class="logo-btn" onclick="resetLogo()">↩️ Стандартный</button>
       </div>
       <img class="logo-preview" id="logoPreview" src="" alt="" style="display:none">
+
+      <!-- Auto-save -->
+      <div class="sb-label" style="margin-top:14px">Авто-сохранение черновика</div>
+      <div class="autosave-row">
+        <label class="switch">
+          <input type="checkbox" id="autoSaveToggle" onchange="toggleAutoSave()">
+          <span class="switch-slider"></span>
+        </label>
+        <span class="t-label" style="font-size:11.5px">Каждые</span>
+        <select class="autosave-interval" id="autoSaveInterval" onchange="changeAutoSaveInterval()">
+          <option value="5">5 мин</option>
+          <option value="10" selected>10 мин</option>
+          <option value="15">15 мин</option>
+          <option value="30">30 мин</option>
+        </select>
+      </div>
+      <div class="autosave-status" id="autoSaveStatus"></div>
+
       <div style="margin-top:14px;border-top:1px solid rgba(100,150,230,.08);padding-top:12px">
         <button class="logo-btn" style="color:#f97272;border-color:rgba(249,114,114,.2);width:100%;justify-content:center;display:flex" onclick="clearAllItems()">🗑 Удалить все позиции</button>
       </div>
@@ -1749,7 +1891,7 @@ function render(){
     const secItems = items[sec]
 
     tableRows += `<tr class="row-sec row-sec-${sec}">
-      <td colspan="7">
+      <td colspan="8">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div><span class="section-dot">${meta.icon}</span><span>${meta.title}</span></div>
           <button class="row-del-btn no-print" style="opacity:.55;font-size:10px;padding:2px 8px;border:1px solid rgba(255,255,255,.15);border-radius:5px" onclick="clearSection('${sec}')" title="Очистить раздел">🗑 Очистить</button>
@@ -1766,7 +1908,8 @@ function render(){
         secTotal += sum
         const alt = i % 2 ? 'is-alt' : ''
         const rawPrice = row[3] || ''
-        tableRows += `<tr class="kp-line kp-line-${sec} ${alt}">
+        tableRows += `<tr class="kp-line kp-line-${sec} ${alt}" draggable="true" data-sec="${sec}" data-idx="${i}">
+          <td class="drag-handle no-print" title="Перетащить для изменения порядка">⠿</td>
           <td>${i + 1}</td>
           <td class="ie-cell" contenteditable="true" spellcheck="false" data-sec="${sec}" data-idx="${i}" data-col="0">${row[0] || ''}</td>
           <td class="ie-cell ie-num" contenteditable="true" spellcheck="false" data-sec="${sec}" data-idx="${i}" data-col="1">${row[1] || '1'}</td>
@@ -1785,12 +1928,13 @@ function render(){
     grandTotal += secTotal
 
     tableRows += `<tr class="row-tot row-tot-${sec}">
+      <td class="no-print"></td>
       <td colspan="5" style="text-align:right">Итого по разделу «${meta.title}»:</td>
       <td>${fmt(secTotal)}</td>
       <td></td>
     </tr>
     <tr class="row-add-item">
-      <td colspan="7"><button class="row-add-btn" onclick="addItem('${sec}')">+ добавить позицию</button></td>
+      <td colspan="8"><button class="row-add-btn" onclick="addItem('${sec}')">+ добавить позицию</button></td>
     </tr>`
   })
 
@@ -1798,28 +1942,32 @@ function render(){
   const total = grandTotal + nds
 
   const discLabel = discType === 'discount' && discVal > 0
-    ? `<tr class="row-nds"><td colspan="6" style="text-align:right;padding:11px 16px;color:#d14e4e;font-style:italic">Применена скидка ${discVal}%</td><td></td></tr>`
+    ? `<tr class="row-nds"><td class="no-print"></td><td colspan="6" style="text-align:right;padding:11px 16px;color:#d14e4e;font-style:italic">Применена скидка ${discVal}%</td><td></td></tr>`
     : discType === 'markup' && discVal > 0
-    ? `<tr class="row-nds"><td colspan="6" style="text-align:right;padding:11px 16px;color:#31a065;font-style:italic">Применена наценка ${discVal}%</td><td></td></tr>`
+    ? `<tr class="row-nds"><td class="no-print"></td><td colspan="6" style="text-align:right;padding:11px 16px;color:#31a065;font-style:italic">Применена наценка ${discVal}%</td><td></td></tr>`
     : ''
 
   const totalRows = (discLabel) + (includeVat
     ? `<tr class="row-grand">
+        <td class="no-print"></td>
         <td colspan="5" style="text-align:right;padding:12px 16px">ИТОГО БЕЗ НДС:</td>
         <td style="padding:12px 16px">${fmt(grandTotal)}</td>
         <td></td>
       </tr>
       <tr class="row-nds">
+        <td class="no-print"></td>
         <td colspan="5" style="text-align:right;padding:11px 16px">НДС 20%:</td>
         <td style="padding:11px 16px">${fmt(nds)}</td>
         <td></td>
       </tr>
       <tr class="row-total-nds">
+        <td class="no-print"></td>
         <td colspan="5" style="text-align:right;padding:14px 16px">ОБЩАЯ СУММА (С НДС):</td>
         <td style="padding:14px 16px">${fmt(total)}</td>
         <td></td>
       </tr>`
     : `<tr class="row-total-nds">
+        <td class="no-print"></td>
         <td colspan="5" style="text-align:right;padding:14px 16px">ОБЩАЯ СУММА:</td>
         <td style="padding:14px 16px">${fmt(grandTotal)}</td>
         <td></td>
@@ -1909,6 +2057,7 @@ function render(){
       <div class="kp-table-wrap">
         <table class="kp-table">
           <thead><tr>
+            <th style="width:22px" class="no-print"></th>
             <th style="width:42px">№</th>
             <th style="text-align:left">Наименование</th>
             <th style="width:68px">Кол-во</th>
@@ -1919,7 +2068,7 @@ function render(){
           </tr></thead>
           <tbody>
             ${tableRows}
-            <tr class="row-gap"><td colspan="6"></td></tr>
+            <tr class="row-gap"><td colspan="7"></td></tr>
             ${totalRows}
           </tbody>
         </table>
@@ -1952,6 +2101,132 @@ function render(){
 
   const pfContacts = document.getElementById('pfContacts')
   if (pfContacts) pfContacts.textContent = `${d.compPhone} · ${d.compEmail}`
+
+  initDragDrop()
+}
+
+// ─── DRAG & DROP ────────────────────────────────────────────────────────────
+let _dragSec = null, _dragIdx = null
+
+function initDragDrop(){
+  const rows = document.querySelectorAll('#kpPreview tr.kp-line[draggable="true"]')
+  rows.forEach(row => {
+    row.addEventListener('dragstart', e => {
+      _dragSec = row.dataset.sec
+      _dragIdx = parseInt(row.dataset.idx)
+      row.classList.add('dragging')
+      e.dataTransfer.effectAllowed = 'move'
+      // Prevent drag from firing contenteditable clicks
+      if (e.target.isContentEditable) { e.preventDefault(); return }
+    })
+    row.addEventListener('dragend', () => {
+      document.querySelectorAll('#kpPreview .kp-line').forEach(r => {
+        r.classList.remove('dragging', 'drag-over')
+      })
+    })
+    row.addEventListener('dragover', e => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      const targetSec = row.dataset.sec
+      if (targetSec !== _dragSec) return
+      document.querySelectorAll('#kpPreview .kp-line').forEach(r => r.classList.remove('drag-over'))
+      if (row !== document.querySelector('#kpPreview .kp-line.dragging')) {
+        row.classList.add('drag-over')
+      }
+    })
+    row.addEventListener('drop', e => {
+      e.preventDefault()
+      const targetSec = row.dataset.sec
+      const targetIdx = parseInt(row.dataset.idx)
+      if (targetSec !== _dragSec || targetIdx === _dragIdx || _dragSec === null) return
+      syncInlineEdits()
+      const [moved] = items[_dragSec].splice(_dragIdx, 1)
+      items[_dragSec].splice(targetIdx, 0, moved)
+      _dragSec = null; _dragIdx = null
+      render()
+    })
+  })
+}
+
+// ─── THEMES ─────────────────────────────────────────────────────────────────
+function setTheme(name){
+  document.documentElement.setAttribute('data-theme', name)
+  localStorage.setItem('kp_theme', name)
+  // Update active button
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === name)
+  })
+}
+
+function loadTheme(){
+  const saved = localStorage.getItem('kp_theme') || 'dark'
+  document.documentElement.setAttribute('data-theme', saved)
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === saved)
+  })
+}
+
+// ─── AUTO-SAVE ───────────────────────────────────────────────────────────────
+let _autoSaveTimer = null
+
+function toggleAutoSave(){
+  const enabled = document.getElementById('autoSaveToggle').checked
+  localStorage.setItem('kp_autosave_enabled', enabled ? '1' : '0')
+  if (enabled) {
+    startAutoSave()
+    showToast('Авто-сохранение включено')
+  } else {
+    clearInterval(_autoSaveTimer)
+    _autoSaveTimer = null
+    document.getElementById('autoSaveStatus').textContent = ''
+    showToast('Авто-сохранение выключено')
+  }
+}
+
+function changeAutoSaveInterval(){
+  const enabled = document.getElementById('autoSaveToggle').checked
+  const mins = parseInt(document.getElementById('autoSaveInterval').value) || 10
+  localStorage.setItem('kp_autosave_mins', String(mins))
+  if (enabled) startAutoSave()
+}
+
+function startAutoSave(){
+  clearInterval(_autoSaveTimer)
+  const mins = parseInt(document.getElementById('autoSaveInterval')?.value) || 10
+  _autoSaveTimer = setInterval(doAutoSave, mins * 60 * 1000)
+}
+
+function doAutoSave(){
+  try {
+    const state = collectState()
+    localStorage.setItem('kp_autosave_draft', JSON.stringify(state))
+    const now = new Date().toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' })
+    localStorage.setItem('kp_autosave_time', now)
+    const el = document.getElementById('autoSaveStatus')
+    if (el) el.textContent = '💾 Сохранено в ' + now
+  } catch(e) { /* silent */ }
+}
+
+function checkAutoSaveDraft(){
+  const draft = localStorage.getItem('kp_autosave_draft')
+  const time = localStorage.getItem('kp_autosave_time')
+  if (!draft) return
+  if (confirm('Найден автосохранённый черновик' + (time ? ' (сохранён в ' + time + ')' : '') + '.\nВосстановить?')) {
+    try {
+      applyState(JSON.parse(draft))
+      showToast('Черновик восстановлен')
+    } catch(e) { showToast('Ошибка восстановления черновика', true) }
+  }
+}
+
+function initAutoSave(){
+  const enabled = localStorage.getItem('kp_autosave_enabled') === '1'
+  const mins = localStorage.getItem('kp_autosave_mins') || '10'
+  const toggle = document.getElementById('autoSaveToggle')
+  const interval = document.getElementById('autoSaveInterval')
+  if (toggle) toggle.checked = enabled
+  if (interval) interval.value = mins
+  if (enabled) startAutoSave()
 }
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
@@ -1959,12 +2234,15 @@ function render(){
 const footerLogo = document.getElementById('printFooterLogo')
 if (footerLogo) footerLogo.src = IMG_ICON
 
+loadTheme()
 render()
 
 // Загружаем историю, шаблоны, логотип и номер КП
 ;(async () => {
   loadRecentFiles()
   loadTemplatesList()
+  initAutoSave()
+  checkAutoSaveDraft()
 
   // Загружаем кастомный логотип
   if (window.electronAPI?.getCustomLogo) {
