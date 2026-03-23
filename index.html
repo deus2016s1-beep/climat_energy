@@ -303,38 +303,10 @@ body{
   object-fit:cover;object-position:center;opacity:.88;z-index:0
 }
 
-/* ─── Advantages bar ─── */
-.kp-adv-bar{
-  display:flex;align-items:stretch;
-  background:linear-gradient(90deg,#163863 0%,#1f508e 50%,#173763 100%);
-  border-bottom:3px solid #d4890e;
-}
-.kp-adv-item{
-  flex:1;padding:13px 10px;text-align:center;position:relative;
-}
-.kp-adv-item+.kp-adv-item::before{
-  content:'';position:absolute;left:0;top:10px;bottom:10px;
-  width:1px;background:rgba(255,255,255,.12)
-}
-.kp-adv-num{
-  font-size:21px;font-weight:900;color:#f0a830;
-  margin-bottom:3px;line-height:1;
-}
-.kp-adv-label{
-  font-size:9.5px;color:rgba(255,255,255,.7);
-  letter-spacing:.4px;line-height:1.35
-}
-.kp-adv-icon{font-size:15px;margin-bottom:3px;display:block}
-
 /* ─── Main content ─── */
 .kp-main{padding:26px 28px 0}
 
-.kp-title-wrap{
-  display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px
-}
-.kp-title-block{flex:1;padding-right:8px}
-.kp-side-stack{width:248px;min-width:248px;display:flex;flex-direction:column;gap:12px}
-
+.kp-title-wrap{margin-bottom:18px}
 .kp-kicker{
   display:inline-flex;align-items:center;gap:6px;
   padding:5px 13px;border-radius:999px;
@@ -346,53 +318,13 @@ body{
 .kp-title{
   font-size:30px;line-height:1.1;color:#173763;font-weight:900;letter-spacing:.1px;margin-bottom:9px
 }
-.kp-subtitle{font-size:12.5px;line-height:1.6;color:#5d6d84;max-width:480px}
+.kp-subtitle{font-size:12.5px;line-height:1.6;color:#5d6d84;max-width:620px}
 
-/* side note */
-.kp-side-note{
-  position:relative;overflow:hidden;border:1px solid #d8e4f2;border-radius:16px;
-  background:linear-gradient(180deg,#fdfefe 0%,#f4f8fd 100%);
-  padding:14px 16px 13px;box-shadow:var(--shadow-card)
-}
-.kp-side-note::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
-  background:linear-gradient(180deg,#2f7fd7,#d4890e)
-}
-.kp-side-note-top{
-  font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
-  color:#6e84a1;margin-bottom:7px;padding-left:9px
-}
-.kp-side-note-title{color:#173763;font-size:13px;line-height:1.35;font-weight:800;margin-bottom:5px;padding-left:9px}
-.kp-side-note-text{color:#5d6d84;font-size:11px;line-height:1.5;padding-left:9px}
-
-/* meta card */
-.kp-meta-card{
-  background:linear-gradient(160deg,#173763 0%,#1e4e8f 100%);
-  color:#fff;border-radius:18px;padding:16px 18px;
-  box-shadow:0 16px 34px rgba(23,55,99,.20)
-}
-.kp-meta-label{font-size:9.5px;text-transform:uppercase;letter-spacing:1.1px;opacity:.65;margin-bottom:4px}
-.kp-meta-value{font-size:13.5px;font-weight:700;line-height:1.35;margin-bottom:11px}
-.kp-meta-value:last-child{margin-bottom:0}
-
-/* ─── Summary cards ─── */
-.kp-summary{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:18px 0 22px
-}
-.kp-summary-card{
-  border:1px solid #e2ebf5;border-radius:16px;padding:14px;
-  background:linear-gradient(180deg,#fff,#f8fbff);
-  box-shadow:0 8px 20px rgba(16,39,73,.05)
-}
-.sum-top{font-size:9.5px;letter-spacing:.9px;text-transform:uppercase;color:#8090a6;font-weight:700;margin-bottom:8px}
-.sum-title{font-size:12.5px;font-weight:700;color:#173763;margin-bottom:5px;display:flex;gap:5px;align-items:center}
-.sum-value{font-size:17px;font-weight:900;color:#1d2636}
-.sum-heat{border-top:4px solid #ef8b2c}
-.sum-vent{border-top:4px solid #31a065}
-.sum-ac{border-top:4px solid #2f7fd7}
-.sum-video{border-top:4px solid #8a4ed6}
-.sum-fire{border-top:4px solid #d14e4e}
-.sum-total{border-top:4px solid var(--gold);background:linear-gradient(180deg,#fffaf0,#fff8e6)!important}
+/* meta line under title */
+.kp-meta-line{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
+.kp-meta-line-item{font-size:11px;color:#5d6d84}
+.kp-meta-line-item strong{color:#173763;font-weight:700}
+[contenteditable].kp-meta-line-val{display:inline;outline:none;border-bottom:1px dashed rgba(23,55,99,.2)}
 
 /* ─── Table ─── */
 .kp-table-wrap{
@@ -736,12 +668,6 @@ tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
   }
   /* Убираем встроенные полоски — заменены fixed-версиями */
   .kp-top-stripe,.kp-bottom-stripe{display:none!important}
-  /* ── Восстанавливаем row-layout для title-wrap в PDF (responsive breakpoint сбрасывает его в column) */
-  .kp-title-wrap{
-    flex-direction:row!important;margin-bottom:3mm!important;gap:14px!important;
-    break-inside:avoid!important;
-  }
-  .kp-side-stack{width:58mm!important;min-width:58mm!important;gap:6px!important}
   /* ── bg-box: короче в PDF чтобы больше влезало на стр.1 */
   .kp-bg-box{min-height:105px!important;height:105px!important}
   /* ── Компактнее шрифты и отступы ── */
@@ -749,25 +675,8 @@ tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
   .kp-title{font-size:22px!important;margin-bottom:6px!important}
   .kp-subtitle{font-size:11px!important;line-height:1.45!important}
   .kp-kicker{padding:3px 9px!important;margin-bottom:6px!important;font-size:9.5px!important}
-  .kp-side-note{padding:9px 11px!important}
-  .kp-side-note-title{font-size:12px!important}
-  .kp-side-note-text{font-size:10px!important}
-  .kp-meta-card{padding:10px 12px!important}
-  .kp-meta-value{font-size:11.5px!important;margin-bottom:6px!important}
-  .kp-meta-label{font-size:8.5px!important}
-  .kp-adv-bar .kp-adv-num{font-size:15px!important}
-  .kp-adv-bar .kp-adv-item{padding:8px 6px!important}
-  .kp-adv-bar .kp-adv-icon{font-size:12px!important;margin-bottom:2px!important}
-  .kp-adv-bar .kp-adv-label{font-size:8.5px!important}
-  .kp-summary-card{padding:9px 10px!important}
-  .sum-value{font-size:14px!important}
-  .sum-title{font-size:11px!important}
-  .kp-summary{
-    gap:5px!important;margin:3mm 0 4mm!important;
-    break-inside:avoid!important;page-break-inside:avoid!important;
-  }
   .kp-footer{margin:0 9mm 5mm!important;padding:11px 13px!important;break-inside:avoid!important}
-  .kp-summary-card,.kp-table-wrap,.services-box,.kp-footer{box-shadow:none!important}
+  .kp-table-wrap,.services-box,.kp-footer{box-shadow:none!important}
 
   /* Таблица: всегда начинается с нового листа */
   .kp-table-wrap{
@@ -805,17 +714,8 @@ tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
     inset:0!important;width:100%!important;height:100%!important;
     object-fit:cover!important;opacity:.88!important
   }
-  /* Advantages bar в PDF */
-  .kp-adv-bar{
-    -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
-    break-inside:avoid!important;page-break-inside:avoid!important;
-  }
-  .kp-adv-num{color:#f0a830!important;-webkit-print-color-adjust:exact!important}
-  .kp-adv-label{color:rgba(255,255,255,.72)!important;-webkit-print-color-adjust:exact!important}
-  .kp-adv-icon{-webkit-print-color-adjust:exact!important}
   .kp-header{break-inside:avoid!important;page-break-inside:avoid!important}
-  .kp-title-wrap{break-inside:avoid!important;page-break-inside:avoid!important}
-  .kp-summary-card{break-inside:avoid!important;page-break-inside:avoid!important}
+  .kp-title-wrap{margin-bottom:3mm!important;break-inside:avoid!important;page-break-inside:avoid!important}
 }
 
 /* ══════════════════════════════════════════════
@@ -841,7 +741,6 @@ html[data-theme="corporate"] body{background:linear-gradient(160deg,#161622 0%,#
 html[data-theme="corporate"] .sidebar{background:linear-gradient(180deg,#121220 0%,#0e0e1a 100%)}
 html[data-theme="corporate"] .sidebar-brand{background:linear-gradient(135deg,rgba(30,30,60,.7),rgba(15,15,35,.9))}
 html[data-theme="corporate"] .kp-top-stripe,html[data-theme="corporate"] .kp-bottom-stripe{background:linear-gradient(90deg,#2a2a4a 0%,#3a3a6a 45%,#c0873a 100%)}
-html[data-theme="corporate"] .kp-adv-bar{background:linear-gradient(90deg,#2a2a4a 0%,#3a3a6a 50%,#2a2a4a 100%)}
 
 /* Theme: Минималистичная */
 html[data-theme="minimal"] {
@@ -907,18 +806,6 @@ html[data-theme="minimal"] .theme-btn.active{border-color:#3b82f6;box-shadow:0 0
   border-radius:7px;color:#dce9ff;padding:4px 6px;font-size:11px;font-family:inherit;outline:none;
 }
 
-/* ── Assurance bar (between summary and table) ── */
-.kp-assurance{
-  display:flex;gap:0;margin:0 0 18px;border-radius:14px;overflow:hidden;
-  border:1px solid #dfe8f3;background:#fff;box-shadow:0 4px 14px rgba(17,39,76,.04);
-}
-.kp-assurance-item{
-  flex:1;display:flex;align-items:center;gap:9px;
-  padding:12px 14px;font-size:11px;color:#173763;font-weight:700;line-height:1.35;
-  border-right:1px solid #edf3fb;
-}
-.kp-assurance-item:last-child{border-right:none}
-.kp-assurance-icon{font-size:18px;flex-shrink:0}
 
 /* ══════════════════════════════════════════════
    DRAG & DROP
@@ -946,9 +833,6 @@ html[data-theme="minimal"] .theme-btn.active{border-color:#3b82f6;box-shadow:0 0
   .preview-area{padding:18px}
   .kp-header{grid-template-columns:150px 1fr}
   .kp-bg-box{grid-column:1/-1;min-height:160px}
-  .kp-title-wrap{flex-direction:column}
-  .kp-side-stack{width:100%;min-width:0}
-  .kp-summary{grid-template-columns:repeat(2,1fr)}
   .services-grid{grid-template-columns:1fr 1fr}
   .svc-item:nth-child(3n){border-right:1px solid #edf2f8}
   .svc-item:nth-child(2n){border-right:none}
@@ -1330,28 +1214,12 @@ const docState = {
   kpNote: 'Коммерческое предложение действительно 14 календарных дней с даты выставления. Цены указаны с учётом стоимости материалов и монтажных работ.',
   kpTitle: 'Инженерные системы\nи монтажные решения',
   kpSubtitle: 'Подбор оборудования, материалов и монтажных работ по вашему объекту — с понятной структурой и прозрачной стоимостью.',
-  assur0: 'Оборудование только от ведущих мировых производителей',
-  assur1: 'Гарантия 3 года на все виды монтажных работ',
-  assur2: 'Договор · Акты · Исполнительная документация',
-  assur3: 'Техническая поддержка и сервисное обслуживание 24/7',
-  adv: [
-    { icon: '🏆', num: '15+',    label: 'лет на рынке' },
-    { icon: '🏗️', num: '500+',   label: 'реализованных объектов' },
-    { icon: '✅', num: '3 года',  label: 'гарантия на монтаж' },
-    { icon: '❄️', num: '6',       label: 'направлений инженерии' },
-    { icon: '🚀', num: '24/7',   label: 'техническая поддержка' },
-  ],
 }
 
 function syncInlineEdits(){
   document.querySelectorAll('#kpPreview [data-field]').forEach(el => {
     const field = el.dataset.field
     if (field && docState.hasOwnProperty(field)) docState[field] = el.innerText.trim()
-  })
-  document.querySelectorAll('#kpPreview [data-adv-idx]').forEach(el => {
-    const i = parseInt(el.dataset.advIdx)
-    const key = el.dataset.advKey
-    if (!isNaN(i) && key && docState.adv[i]) docState.adv[i][key] = el.innerText.trim()
   })
 }
 
@@ -1479,7 +1347,6 @@ function collectState(){
   return {
     _version: 3,
     ...docState,
-    adv: JSON.parse(JSON.stringify(docState.adv)),
     includeVat: b('includeVat'),
     discType: f('discType'), discValue: f('discValue'),
     chk_heat: b('chk_heat'), chk_vent: b('chk_vent'), chk_ac: b('chk_ac'),
@@ -1493,9 +1360,8 @@ function applyState(s){
   const chk = (id, val) => { const el = document.getElementById(id); if(el) el.checked = !!val }
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? '' }
   // Restore docState fields
-  const fields = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote','kpTitle','kpSubtitle','assur0','assur1','assur2','assur3']
+  const fields = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote','kpTitle','kpSubtitle']
   fields.forEach(k => { if (s[k] !== undefined) docState[k] = s[k] })
-  if (s.adv && Array.isArray(s.adv)) docState.adv = s.adv.map(a => ({...a}))
   // Restore controls
   chk('includeVat', s.includeVat)
   if (s.discType) set('discType', s.discType)
@@ -1920,15 +1786,6 @@ document.addEventListener('blur', function(e) {
     return
   }
 
-  // Adv bar fields
-  const advIdx = parseInt(el.dataset.advIdx)
-  const advKey = el.dataset.advKey
-  if (!isNaN(advIdx) && advKey && docState.adv[advIdx]) {
-    docState.adv[advIdx][advKey] = el.innerText.trim()
-    persistState()
-    return
-  }
-
   const sec = el.dataset.sec
   const idx = parseInt(el.dataset.idx)
   const col = parseInt(el.dataset.col)
@@ -2108,28 +1965,6 @@ function render(){
         <td></td>
       </tr>`)
 
-  const summaryCards = Object.entries(secTotals)
-    .filter(([, v]) => v > 0)
-    .map(([sec, v]) => {
-      const m = SECTIONS[sec]
-      return `<div class="kp-summary-card sum-${sec}">
-        <div class="sum-top">Раздел</div>
-        <div class="sum-title"><span>${m.icon}</span><span>${m.title}</span></div>
-        <div class="sum-value">${fmt(v)} ₽</div>
-      </div>`
-    }).join('')
-
-  const discNote = discType === 'discount' && discVal > 0 ? ` (−${discVal}%)` : discType === 'markup' && discVal > 0 ? ` (+${discVal}%)` : ''
-  const totalCard = `<div class="kp-summary-card sum-total">
-    <div class="sum-top">${includeVat ? 'Итог · с НДС' : 'Итог · без НДС'}${discNote}</div>
-    <div class="sum-title"><span>💼</span><span>Общая стоимость</span></div>
-    <div class="sum-value">${fmt(total)} ₽</div>
-  </div>`
-
-  const summaryHtml = summaryCards
-    ? `<div class="kp-summary">${summaryCards}${totalCard}</div>`
-    : ''
-
   const d = docState
   const html = `
     <div class="kp-top-stripe"></div>
@@ -2153,47 +1988,16 @@ function render(){
       </div>
     </div>
 
-    <!-- Advantages bar -->
-    <div class="kp-adv-bar">
-      ${d.adv.map((a, i) => `
-      <div class="kp-adv-item">
-        <span class="kp-adv-icon" contenteditable="true" data-adv-idx="${i}" data-adv-key="icon" spellcheck="false">${a.icon}</span>
-        <div class="kp-adv-num" contenteditable="true" data-adv-idx="${i}" data-adv-key="num" spellcheck="false">${a.num}</div>
-        <div class="kp-adv-label" contenteditable="true" data-adv-idx="${i}" data-adv-key="label" spellcheck="false">${a.label}</div>
-      </div>`).join('')}
-    </div>
-
     <div class="kp-main">
       <div class="kp-title-wrap">
-        <div class="kp-title-block">
-          <div class="kp-kicker">❄️ Коммерческое предложение</div>
-          <div class="kp-title ie-block" contenteditable="true" data-field="kpTitle" spellcheck="false">${d.kpTitle}</div>
-          <div class="kp-subtitle ie-block" contenteditable="true" data-field="kpSubtitle" spellcheck="false">${d.kpSubtitle}</div>
+        <div class="kp-kicker">❄️ Коммерческое предложение</div>
+        <div class="kp-title ie-block" contenteditable="true" data-field="kpTitle" spellcheck="false">${d.kpTitle}</div>
+        <div class="kp-subtitle ie-block" contenteditable="true" data-field="kpSubtitle" spellcheck="false">${d.kpSubtitle}</div>
+        <div class="kp-meta-line">
+          <div class="kp-meta-line-item">№&nbsp;<span class="kp-meta-line-val" contenteditable="true" data-field="kpNum" spellcheck="false">${d.kpNum || '—'}</span></div>
+          <div class="kp-meta-line-item">Получатель:&nbsp;<span class="kp-meta-line-val" contenteditable="true" data-field="kpClient" spellcheck="false">${d.kpClient || ''}</span></div>
+          <div class="kp-meta-line-item">Дата:&nbsp;<strong>${today}</strong></div>
         </div>
-        <div class="kp-side-stack">
-          <div class="kp-side-note">
-            <div class="kp-side-note-top">Работаем под ключ</div>
-            <div class="kp-side-note-title">Проектирование · Поставка · Монтаж</div>
-            <div class="kp-side-note-text">Подбираем решение под ваш объект, бюджет и сроки — с гарантией качества и сопровождением.</div>
-          </div>
-          <div class="kp-meta-card">
-            <div class="kp-meta-label">Номер документа</div>
-            <div class="kp-meta-value" contenteditable="true" data-field="kpNum" spellcheck="false">${d.kpNum || '—'}</div>
-            <div class="kp-meta-label">Получатель</div>
-            <div class="kp-meta-value" contenteditable="true" data-field="kpClient" spellcheck="false" style="min-height:1.3em">${d.kpClient || ''}</div>
-            <div class="kp-meta-label">Дата</div>
-            <div class="kp-meta-value">${today}</div>
-          </div>
-        </div>
-      </div>
-
-      ${summaryHtml}
-
-      <div class="kp-assurance">
-        <div class="kp-assurance-item"><span class="kp-assurance-icon">🏆</span><span class="ie-block" contenteditable="true" spellcheck="false" data-field="assur0">${docState.assur0}</span></div>
-        <div class="kp-assurance-item"><span class="kp-assurance-icon">🛡️</span><span class="ie-block" contenteditable="true" spellcheck="false" data-field="assur1">${docState.assur1}</span></div>
-        <div class="kp-assurance-item"><span class="kp-assurance-icon">📋</span><span class="ie-block" contenteditable="true" spellcheck="false" data-field="assur2">${docState.assur2}</span></div>
-        <div class="kp-assurance-item"><span class="kp-assurance-icon">🚀</span><span class="ie-block" contenteditable="true" spellcheck="false" data-field="assur3">${docState.assur3}</span></div>
       </div>
 
       <div class="kp-table-wrap">
