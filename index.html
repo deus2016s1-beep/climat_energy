@@ -1922,6 +1922,7 @@ document.addEventListener('blur', function(e) {
 }, true)
 
 // ─── ARROW KEY NAVIGATION BETWEEN CELLS ─────────────────────────────────────
+// Стрелки ВСЕГДА переключают ячейку (текст внутри — только мышкой)
 document.addEventListener('keydown', function(e) {
   const el = e.target
   if (!el || !el.classList.contains('ie-cell')) return
@@ -1931,14 +1932,11 @@ document.addEventListener('keydown', function(e) {
   if (sec === undefined || isNaN(idx) || isNaN(col)) return
 
   let nextSec = sec, nextIdx = idx, nextCol = col
-  const sel = window.getSelection()
-  const atStart = sel && sel.isCollapsed && sel.anchorOffset === 0
-  const atEnd = sel && sel.isCollapsed && sel.anchorOffset >= (el.textContent || '').length
 
-  if (e.key === 'ArrowRight' && atEnd) {
+  if (e.key === 'ArrowRight') {
     nextCol = col + 1
     if (nextCol > 3) { nextCol = 0; nextIdx = idx + 1 }
-  } else if (e.key === 'ArrowLeft' && atStart) {
+  } else if (e.key === 'ArrowLeft') {
     nextCol = col - 1
     if (nextCol < 0) { nextCol = 3; nextIdx = idx - 1 }
   } else if (e.key === 'ArrowDown') {
