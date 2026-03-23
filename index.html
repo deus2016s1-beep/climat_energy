@@ -1958,52 +1958,44 @@ document.addEventListener('blur', function(e) {
 document.addEventListener('keydown', function(e) {
   const el = e.target
   if (!el || !el.classList.contains('ie-cell')) return
-  const sec = el.dataset.sec
-  const idx = parseInt(el.dataset.idx)
-  const col = parseInt(el.dataset.col)
-  if (sec === undefined || isNaN(idx) || isNaN(col)) return
 
-  let nextSec = sec, nextIdx = idx, nextCol = col
+  const COLS = 4 // колонок в строке
 
-  if (e.key === 'ArrowRight') {
-    e.preventDefault()
-    nextCol = col + 1
-    if (nextCol > 3) { nextCol = 0; nextIdx = idx + 1 }
-  } else if (e.key === 'ArrowLeft') {
-    e.preventDefault()
-    nextCol = col - 1
-    if (nextCol < 0) { nextCol = 3; nextIdx = idx - 1 }
-  } else if (e.key === 'ArrowDown') {
-    e.preventDefault()
-    nextIdx = idx + 1
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault()
-    nextIdx = idx - 1
-  } else if (e.key === 'Tab') {
-    e.preventDefault()
-    if (e.shiftKey) {
-      nextCol = col - 1
-      if (nextCol < 0) { nextCol = 3; nextIdx = idx - 1 }
-    } else {
-      nextCol = col + 1
-      if (nextCol > 3) { nextCol = 0; nextIdx = idx + 1 }
+  if (!['ArrowRight','ArrowLeft','ArrowDown','ArrowUp','Tab','Enter'].includes(e.key)) return
+  e.preventDefault()
+
+  // Все видимые ячейки в порядке DOM — автоматически включает все разделы
+  const all = Array.from(document.querySelectorAll('#kpPreview td.ie-cell'))
+  const pos = all.indexOf(el)
+  if (pos === -1) return
+
+  let next = null
+
+  if (e.key === 'ArrowRight' || (e.key === 'Tab' && !e.shiftKey)) {
+    next = all[pos + 1] ?? null
+  } else if (e.key === 'ArrowLeft' || (e.key === 'Tab' && e.shiftKey)) {
+    next = all[pos - 1] ?? null
+  } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
+    // Найти ячейку с тем же col на следующей строке (через COLS позиций),
+    // но может не совпасть если разделы имеют разные длины — ищем по data-col
+    const col = parseInt(el.dataset.col)
+    for (let i = pos + 1; i < all.length; i++) {
+      if (parseInt(all[i].dataset.col) === col) { next = all[i]; break }
     }
-  } else if (e.key === 'Enter') {
-    e.preventDefault()
-    nextIdx = idx + 1
-  } else {
-    return
+    if (!next) next = all[pos + 1] ?? null // fallback
+  } else if (e.key === 'ArrowUp') {
+    const col = parseInt(el.dataset.col)
+    for (let i = pos - 1; i >= 0; i--) {
+      if (parseInt(all[i].dataset.col) === col) { next = all[i]; break }
+    }
+    if (!next) next = all[pos - 1] ?? null // fallback
   }
 
-  // Find target cell
-  const target = document.querySelector(
-    `#kpPreview td.ie-cell[data-sec="${nextSec}"][data-idx="${nextIdx}"][data-col="${nextCol}"]`
-  )
-  if (target) {
-    target.focus()
+  if (next) {
+    next.focus()
     const sel = window.getSelection()
     const range = document.createRange()
-    range.selectNodeContents(target)
+    range.selectNodeContents(next)
     range.collapse(false)
     sel.removeAllRanges()
     sel.addRange(range)
