@@ -1938,9 +1938,18 @@ document.addEventListener('blur', function(e) {
       val = String(parseFloat(val.replace(/\s/g, '').replace(',', '.')) || '')
     }
     items[sec][idx][col] = val
-    syncInlineEdits()
-    render()
-    persistState()
+    // Если фокус переходит на другую ie-cell — только сохраняем данные,
+    // render() не вызываем (иначе DOM пересоздаётся и фокус теряется)
+    setTimeout(() => {
+      const next = document.activeElement
+      if (next && next.classList.contains('ie-cell')) {
+        persistState()
+      } else {
+        syncInlineEdits()
+        render()
+        persistState()
+      }
+    }, 0)
   }
 }, true)
 
