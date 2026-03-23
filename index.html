@@ -264,7 +264,7 @@ body{
 
 /* ─── Header ─── */
 .kp-header{
-  display:grid;grid-template-columns:170px 260px 1fr;
+  display:grid;grid-template-columns:170px 1fr;
   background:#fff;border-bottom:1px solid #dce7f4;
 }
 .kp-logo-box{
@@ -279,29 +279,11 @@ body{
   background:linear-gradient(180deg,#fdfeff 0%,#f5f8fc 100%);
 }
 .kp-requisites b{font-size:14px;display:block;margin-bottom:6px;color:#173763;font-weight:800;letter-spacing:.2px}
-.kp-bg-box{
-  overflow:hidden;
-  background:linear-gradient(135deg,#dde9f7 0%,#c8daf0 50%,#d5e5f5 100%);
-  position:relative;min-height:166px;
+.kp-header-stripe{
+  height:4px;
+  background:linear-gradient(90deg,#163863 0%,#255c9d 45%,#d4890e 100%);
 }
-.kp-bg-box::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(circle at 20% 50%,rgba(23,55,99,.12),transparent 55%),
-    radial-gradient(circle at 80% 30%,rgba(212,137,14,.08),transparent 45%);
-  z-index:1;pointer-events:none;
-}
-.kp-bg-box::after{
-  content:'CLIMAT ENERGY';
-  position:absolute;bottom:10px;right:14px;
-  font-size:9px;font-weight:800;letter-spacing:2px;
-  color:rgba(23,55,99,.22);z-index:2;pointer-events:none;
-}
-.kp-bg-box img{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  object-fit:cover;object-position:center;opacity:.88;z-index:0
-}
+
 
 /* ─── Main content ─── */
 .kp-main{padding:26px 28px 0}
@@ -318,10 +300,8 @@ body{
 .kp-title{
   font-size:30px;line-height:1.1;color:#173763;font-weight:900;letter-spacing:.1px;margin-bottom:9px
 }
-.kp-subtitle{font-size:12.5px;line-height:1.6;color:#5d6d84;max-width:620px}
-
 /* meta line under title */
-.kp-meta-line{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
+.kp-meta-line{display:flex;flex-direction:column;gap:4px;margin-top:10px}
 .kp-meta-line-item{font-size:11px;color:#5d6d84}
 .kp-meta-line-item strong{color:#173763;font-weight:700}
 [contenteditable].kp-meta-line-val{display:inline;outline:none;border-bottom:1px dashed rgba(23,55,99,.2)}
@@ -668,12 +648,10 @@ tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
   }
   /* Убираем встроенные полоски — заменены fixed-версиями */
   .kp-top-stripe,.kp-bottom-stripe{display:none!important}
-  /* ── bg-box: короче в PDF чтобы больше влезало на стр.1 */
-  .kp-bg-box{min-height:105px!important;height:105px!important}
   /* ── Компактнее шрифты и отступы ── */
-  .kp-main{padding:4mm 8mm 0!important}
-  .kp-title{font-size:22px!important;margin-bottom:6px!important}
-  .kp-subtitle{font-size:11px!important;line-height:1.45!important}
+  .kp-main{padding:3mm 8mm 0!important}
+  .kp-title-wrap{margin-bottom:2mm!important}
+  .kp-title{font-size:22px!important;margin-bottom:4px!important}
   .kp-kicker{padding:3px 9px!important;margin-bottom:6px!important;font-size:9.5px!important}
   .kp-footer{margin:0 9mm 5mm!important;padding:11px 13px!important;break-inside:avoid!important}
   .kp-table-wrap,.services-box,.kp-footer{box-shadow:none!important}
@@ -707,15 +685,9 @@ tr:hover .row-del-btn,tr:hover .row-dup-btn{opacity:.7}
   }
   .row-gap{display:none!important}
 
-  .kp-logo-box,.kp-requisites,.kp-bg-box{min-height:136px!important}
-  .kp-bg-box{height:136px!important;overflow:hidden!important;position:relative!important}
-  .kp-bg-box img{
-    display:block!important;position:absolute!important;
-    inset:0!important;width:100%!important;height:100%!important;
-    object-fit:cover!important;opacity:.88!important
-  }
+  .kp-logo-box,.kp-requisites{min-height:auto!important}
   .kp-header{break-inside:avoid!important;page-break-inside:avoid!important}
-  .kp-title-wrap{margin-bottom:3mm!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  .kp-title-wrap{break-inside:avoid!important;page-break-inside:avoid!important}
 }
 
 /* ══════════════════════════════════════════════
@@ -832,7 +804,6 @@ html[data-theme="minimal"] .theme-btn.active{border-color:#3b82f6;box-shadow:0 0
   .sidebar{width:100%;min-width:0;height:auto;position:static}
   .preview-area{padding:18px}
   .kp-header{grid-template-columns:150px 1fr}
-  .kp-bg-box{grid-column:1/-1;min-height:160px}
   .services-grid{grid-template-columns:1fr 1fr}
   .svc-item:nth-child(3n){border-right:1px solid #edf2f8}
   .svc-item:nth-child(2n){border-right:none}
@@ -1213,7 +1184,6 @@ const docState = {
   kpClient: '',
   kpNote: 'Коммерческое предложение действительно 14 календарных дней с даты выставления. Цены указаны с учётом стоимости материалов и монтажных работ.',
   kpTitle: 'Инженерные системы\nи монтажные решения',
-  kpSubtitle: 'Подбор оборудования, материалов и монтажных работ по вашему объекту — с понятной структурой и прозрачной стоимостью.',
 }
 
 function syncInlineEdits(){
@@ -1360,7 +1330,7 @@ function applyState(s){
   const chk = (id, val) => { const el = document.getElementById(id); if(el) el.checked = !!val }
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? '' }
   // Restore docState fields
-  const fields = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote','kpTitle','kpSubtitle']
+  const fields = ['compName','compAddr','compPhone','compEmail','compINN','compRs','compBank','compBIK','compDir','kpNum','kpClient','kpNote','kpTitle']
   fields.forEach(k => { if (s[k] !== undefined) docState[k] = s[k] })
   // Restore controls
   chk('includeVat', s.includeVat)
@@ -1983,16 +1953,13 @@ function render(){
         Банк: <span contenteditable="true" data-field="compBank" spellcheck="false">${d.compBank}</span><br>
         БИК: <span contenteditable="true" data-field="compBIK" spellcheck="false">${d.compBIK}</span>
       </div>
-      <div class="kp-bg-box">
-        <img src="${IMG_BG}" alt="Climat Energy">
-      </div>
     </div>
+    <div class="kp-header-stripe"></div>
 
     <div class="kp-main">
       <div class="kp-title-wrap">
         <div class="kp-kicker">❄️ Коммерческое предложение</div>
         <div class="kp-title ie-block" contenteditable="true" data-field="kpTitle" spellcheck="false">${d.kpTitle}</div>
-        <div class="kp-subtitle ie-block" contenteditable="true" data-field="kpSubtitle" spellcheck="false">${d.kpSubtitle}</div>
         <div class="kp-meta-line">
           <div class="kp-meta-line-item">№&nbsp;<span class="kp-meta-line-val" contenteditable="true" data-field="kpNum" spellcheck="false">${d.kpNum || '—'}</span></div>
           <div class="kp-meta-line-item">Получатель:&nbsp;<span class="kp-meta-line-val" contenteditable="true" data-field="kpClient" spellcheck="false">${d.kpClient || ''}</span></div>
